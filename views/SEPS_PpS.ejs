@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enio | Cena DT vs Cena odchýlky</title>
+    <link href="/css/style.css" rel="stylesheet" type="text/css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            <img src="/img/Enio_wordmark_black_background.jpg" alt="Logo" style="height: 50px; width: auto;">
+        </div>
+        <form action="/PpS-SEPS" method="POST" class="navigation-form">
+            <input type="hidden" name="direction" id="direction" />
+            <input type="hidden" name="sluzbaFinder" id="sluzbaFinder" value="<%= sluzbaFinder %>" />
+            <button type="button" class="triangle-button backward" onclick="navigate('backward')"></button>
+            <input type="text" name="currentDay" id="currentDay" value="<%= currentDay %>" />
+            <button type="button" class="triangle-button forward" onclick="navigate('forward')"></button>
+        </form>
+
+    </div>
+    <div class="navigate-line">
+        <div id="home-icon" onclick="toggleNav()">
+            <img src="/img/Enio-home-icon-small.png" alt="home" style="height: 20px; width: auto;">
+        </div>
+        <div class="home-text">Výsledky denného trhu vs odchýlka sústavy</div>
+        <div class="checkbox-group">
+            <label for="myListBox">Výber služby:</label>
+            <select id="myListBox" name="myListBox" onchange="zmenaSluzby(event)">
+
+                <option value ="spolu" <% if ( sluzbaFinder  == "spolu") { %><%= "selected" %><% } %> >Spolu</option>
+                <option value ="afrr" <% if ( sluzbaFinder  == "afrr") { %><%= "selected" %><% } %> >aFRR</option>
+                <option value ="mfrr" <% if ( sluzbaFinder  == "mfrr") { %><%= "selected" %><% } %> >mFRR</option>
+                <option value ="trv3" <% if ( sluzbaFinder  == "trv3") { %><%= "selected" %><% } %> >TRV3</option>
+
+            </select>
+        </div>
+    </div>
+
+    <%- include('../partials/navigator') %>
+
+    </div>
+
+    <div class="container">
+        <div class="left">
+            <canvas id="myChart"></canvas>
+        </div>
+        <div class="right" width="600px">
+            <h3>Prehľad cien DT a ceny odchýlky</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <% if (sluzbaFinder === "spolu") { %>
+                            <th>QH</th>
+                            <th>UTC čas</th>
+                            <th>Dis. kladná</th>
+                            <th>Dis. zaporná</th>
+                        <% } %>
+                        <% if (sluzbaFinder === "afrr") { %>
+                            <th>QH</th>
+                            <th>UTC čas</th> 
+                            <th>aFRR+</th>
+                            <th>aFRR-</th>
+                        <% } %>
+                        <% if (sluzbaFinder === "mfrr") { %>
+                            <th>QH</th>
+                            <th>UTC čas</th> 
+                            <th>mFRR+</th>
+                            <th>mFRR+ una</th>
+                            <th>mFRR-</th>
+                            <th>mFRR- una</th>
+                        <% } %>
+                        <% if (sluzbaFinder === "trv3") { %>
+                            <th>QH</th>
+                            <th>UTC čas</th> 
+                            <th>TRV3+</th>
+                            <th>TRV3-</th>
+                        <% } %>
+                    </tr>
+                </thead>
+                <tbody>
+                  
+                    <% if (sluzbaFinder === "spolu") { %>                                                   <!-- Zobrazenie tabuľky pre službu "spolu" -->
+                        <% dataJSON.forEach(function(item) { %>
+                            <tr>
+                                <td class="timestamp"><%= item.qh_num %></td>
+                                <td class="timestamp"><%= item.utc_cas %></td>
+
+                                <td>
+                                    <% if (item.spolu_PPps !== null && item.spolu_PPps !== undefined) { %>
+                                        <%= item.spolu_PPps %>
+                                    <% } else { %>
+                                        N/A
+                                    <% } %>
+
+                                </td>
+
+                                <td>
+                                    <% if (item.spolu_NPps !== null && item.spolu_NPps !== undefined) { %>
+                                        <%= item.spolu_NPps%>
+                                    <% } else { %>
+                                        N/A
+                                    <% } %>
+
+                                </td>
+                            </tr>
+                        <% }); %>
+                    <% } %>
+                    
+                    <% if (sluzbaFinder === "afrr") { %>                                                   <!-- Zobrazenie tabuľky pre službu "aFRR" -->
+                        <% dataJSON.forEach(function(item) { %>
+                            <tr>
+                                <td class="timestamp"><%= item.qh_num %></td>
+                                <td class="timestamp"><%= item.utc_cas %></td>
+
+                                <td>
+                                    <% if (item.aFRRP_PpS !== null && item.aFRRP_PpS !== undefined) { %>
+                                        <%= item.aFRRP_PpS %>
+                                    <% } else { %>
+                                        N/A
+                                    <% } %>
+
+                                </td>
+
+                                <td>
+                                    <% if (item.aFRRN_PpS !== null && item.aFRRN_PpS !== undefined) { %>
+                                        <%= item.aFRRN_PpS %>
+                                    <% } else { %>
+                                        N/A
+                                    <% } %>
+
+                                </td>
+                            </tr>
+                        <% }); %>
+                    <% } %>
+
+                    <% if (sluzbaFinder === "mfrr") { %>                                                   <!-- Źobrazenie tabuľky pre službu "mFRR" -->
+                        <% dataJSON.forEach(function(item) { %>
+                            <tr>
+                                <td class="timestamp"><%= item.qh_num %></td>
+                                <td class="timestamp"><%= item.utc_cas %></td>
+
+                                <td>
+                                    <% if (item.mFRRP_PpS !== null && item.mFRRP_PpS !== undefined) { %>
+                                        <%= item.mFRRP_PpS %>
+                                    <% } else { %>
+                                        N/A
+                                    <% } %>
+
+                                </td>
+
+                                <td>
+                                    <% if (item.mFRRP_una !== null && item.mFRRP_una !== undefined) { %>
+                                        <%= item.mFRRP_una %>
+                                    <% } else { %>
+                                        N/A
+                                    <% } %>
+
+                                </td>
+
+                                <td>
+                                    <% if (item.mFRRN_PpS !== null && item.mFRRN_PpS !== undefined) { %>
+                                        <%= item.mFRRN_PpS %>
+                                    <% } else { %>
+                                        N/A
+                                    <% } %>
+
+                                </td>
+
+                                <td>
+                                    <% if (item.mFRRN_una !== null && item.mFRRN_una !== undefined) { %>
+                                        <%= item.mFRRN_una %>
+                                    <% } else { %>
+                                        N/A
+                                    <% } %>
+
+                                </td>
+                            </tr>
+                        <% }); %>
+                    <% } %>
+
+                    <% if (sluzbaFinder === "trv3") { %>                                                   <!-- Źobrazenie tabuľky pre službu "TRV3" -->
+                        <% dataJSON.forEach(function(item) { %>
+                            <tr>
+                                <td class="timestamp"><%= item.qh_num %></td>
+                                <td class="timestamp"><%= item.utc_cas %></td>
+
+                                <td>
+                                    <% if (item.TRV3P_PpS !== null && item.TRV3P_PpS !== undefined) { %>
+                                        <%= item.TRV3P_PpS %>
+                                    <% } else { %>
+                                        N/A
+                                    <% } %>
+
+                                </td>
+
+                                <td>
+                                    <% if (item.TRV3N_PpS !== null && item.TRV3N_PpS !== undefined) { %>
+                                        <%= item.TRV3N_PpS %>
+                                    <% } else { %>
+                                        N/A
+                                    <% } %>
+
+                                </td>
+                            </tr>
+                        <% }); %>
+                    <% } %>
+
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+
+        let dataGraf_obj = ' <%-JSON.stringify(dataJSON) %> ';
+        let dataGraf = JSON.parse(dataGraf_obj);
+        let sluzbaFinder = '<%= sluzbaFinder %>';
+
+        let labels = dataGraf.map(item => item.qh_num);
+        let aFRRP = dataGraf.map(item => item.aFRRP_PpS || null);
+        let aFRRN = dataGraf.map(item => item.aFRRN_PpS * -1 || null);
+        let TRV3P = dataGraf.map(item => item.TRV3P_PpS || null);
+        let TRV3N = dataGraf.map(item => item.TRV3N_PpS * -1 || null);
+        let mFRRP = dataGraf.map(item => item.mFRRP_PpS || null);
+        let mFRRN = dataGraf.map(item => item.mFRRN_PpS * -1 || null);
+
+        let delayed;
+
+        function zmenaSluzby(event) {
+            const selectedValue = event.target.value;
+            document.getElementById('sluzbaFinder').value = selectedValue;
+            document.querySelector('form').submit();
+
+        };
+
+        function navigate(direction) {
+            document.getElementById('direction').value = direction;
+            document.querySelector('form').submit();
+        }
+    
+
+        let chart_dataset;
+
+        if (sluzbaFinder === "spolu") {
+
+            chart_dataset = {
+                labels: labels,
+                datasets: [
+                {
+                    label: 'Kladná dipsonibilita aFRR+',
+                    data: aFRRP,
+                    backgroundColor: 'rgba(180, 244, 192, 1)',
+                    fill: true
+                },
+                {
+                    label: 'Kladná dipsonibilita TRV3+',
+                    data: TRV3P,
+                    backgroundColor: 'rgba(113, 214, 133, 1)',
+                    fill: true
+                },
+                {
+                    label: 'Kladná dipsonibilita mFRR+',
+                    data: mFRRP,
+                    backgroundColor: 'rgba(40, 155, 63, 1)',
+                    fill: true
+                },
+                {
+                    label: 'Záporná dipsonibilita aFRR-',
+                    data: aFRRN,
+                    backgroundColor: 'rgba(180, 244, 192, 1)',
+                    fill: true
+                },
+                {
+                    label: 'Záporná dipsonibilita TRV3-',
+                    data: TRV3N,
+                    backgroundColor: 'rgba(113, 214, 133, 1)',
+                    fill: true
+                },
+                {
+                    label: 'Záporná dipsonibilita mFRR-',
+                    data: mFRRN,
+                    backgroundColor: 'rgba(40, 155, 63, 1)',
+                    fill: true
+                }
+            ]}
+        
+        } else if (sluzbaFinder === "afrr") {
+
+
+            chart_dataset = {
+                labels: labels,
+                datasets: [
+                {
+                    label: 'Kladná dipsonibilita aFRR+',
+                    data: aFRRP,
+                    backgroundColor: 'rgba(180, 244, 192, 0.8)',
+                    fill: true
+                },
+
+                {
+                    label: 'Záporná dipsonibilita aFRR-',
+                    data: aFRRN,
+                    backgroundColor: 'rgba(218, 246, 223, 0.8)',
+                    fill: true
+                }
+            ]}
+
+            
+        } else if (sluzbaFinder === "trv3") {
+            
+            chart_dataset = {
+                labels: labels,
+                datasets: [
+                {
+                    label: 'Kladná dipsonibilita TRV3+',
+                    data: TRV3P,
+                    backgroundColor: 'rgba(113, 214, 133, 0.8)',
+                    fill: true
+                },
+                {
+                    label: 'Záporná dipsonibilita TRV3-',
+                    data: TRV3N,
+                    backgroundColor: 'rgba(139, 213, 154, 0.8)',
+                    fill: true
+                }
+            ]}
+        } else if (sluzbaFinder === "mfrr") {
+            
+            chart_dataset = {
+                labels: labels,
+                datasets: [
+                {
+                    label: 'Kladná dipsonibilita mFRR+',
+                    data: mFRRP,
+                    backgroundColor: 'rgba(40, 155, 63, 0.8)',
+                    fill: true
+                },
+                {
+                    label: 'Záporná dipsonibilita mFRR-',
+                    data: mFRRN,
+                    backgroundColor: 'rgba(16, 150, 42, 0.8)',
+                    fill: true
+                }
+            ]}
+        }
+
+        const ctx = document.getElementById('myChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: chart_dataset,
+            options: {
+                responsive: true,
+                scales: {
+                    x: {stacked: true},
+                    y: {stacked: true}},    
+                maintainAspectRatio: false,
+                animation: {
+                    onComplete: () => {
+                        delayed = true;
+                    },
+                    
+                    delay: (context) => {
+                    
+                        let delay = 0;
+                        
+                        if (context.type === 'data' && context.mode === 'default' && !delayed) {
+                                delay = context.dataIndex * 20 + context.datasetIndex * 300;
+                        }
+                    return delay;
+                    
+                    },
+                },
+            }});
+
+    </script>
+
+<script src="js/script.js"></script>   <!--script, ktorý je zodpovedný pre navigátora-->
+
+</body>
+</html>

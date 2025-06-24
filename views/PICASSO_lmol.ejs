@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enio | Ceny PICASSO</title>
+    <link href="/css/style.css" rel="stylesheet" type="text/css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            <img src="/img/Enio_wordmark_black_background.jpg" alt="Logo" style="height: 50px; width: auto;">
+        </div>
+        <form action="/PI-LMOL" method="POST" class="navigation-form">
+            <input type="hidden" name="direction" id="direction" />
+            <input type="hidden" name="smer" id="smer" value="<%= dataJSON.smer %>" />
+            <input type="hidden" name="qh_num_year" id="qh_num_year" value="<%= dataJSON.qh_num_year %>" />
+            <button type="button" class="triangle-button backward" onclick="navigate('backward')"></button>
+            <input type="text" name="qh_perioda" id="qh_perioda" value="<%= dataJSON.perioda %>" />
+            <button type="button" class="triangle-button forward" onclick="navigate('forward')"></button>
+        </form>
+
+    </div>
+    <div class="navigate-line">
+        <div id="home-icon" onclick="toggleNav()">
+            <img src="/img/Enio-home-icon-small.png" alt="home" style="height: 20px; width: auto;">
+        </div>
+        <div class="home-text">Ceny PICASSO - prehľad cien aktivovaných ponúk zo strany centrálného regulátora</div>
+        <div class="checkbox-group">
+            <label>
+                <input type="checkbox" id="checkbox_pos" onclick="toggleCheckbox('checkbox_pos')" 
+                <% if (dataJSON.smer == "POS") { %>
+                    <%= "checked" %>
+                    <% } %>>Ceny PICASSO pre kladnú regulačnú elektrinu
+            </label>
+            <label>
+                <input type="checkbox" id="checkbox_neg" onclick="toggleCheckbox('checkbox_neg')"
+                <% if (dataJSON.smer == "NEG") { %>
+                    <%= "checked" %>
+                    <% } %>>Ceny PICASSO pre zápornú regulačnú elektrinu
+            </label>
+        </div>
+
+    </div>
+
+    <%- include('../partials/navigator') %>
+
+    </div>
+
+    <div class="container">
+        <div class="left">
+            <canvas id="myChart"></canvas>
+        </div>
+        <div class="right">
+            <h3>
+                <% if (smer == "POS") { %>
+                    <%= "Prehľad cien PICASSO - Kladná RE" %>
+                    <% } else { %>
+                    <%= "Prehľad cien PICASSO - Záporná RE" %>
+                    <% } %>
+                </h3>
+            <table>
+                <thead>
+                    <tr>
+        
+                        <th>Unit</th>
+                        <th>Množstvo</th>
+                        <th>Cena</th>
+
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                    <% dataJSON.lmol.forEach(function(item) { %>
+                        <tr>
+                          
+
+                            <td>
+                                <% if (item.UNIT !== null && item.UNIT !== undefined) { %>
+                                    <%= item.UNIT %>
+                                <% } else { %>
+                                    N/A
+                                <% } %>
+
+                            </td>
+
+                            <td>
+                                <% if (item.quantity !== null && item.quantity !== undefined) { %>
+                                    <%= item.quantity.toFixed(0) %>
+                                <% } else { %>
+                                    N/A
+                                <% } %>
+
+                            </td>
+
+                            <td>
+                                <% if (item.price !== null && item.price !== undefined) { %>
+                                    <%= item.price.toFixed(2) %>
+                                <% } else { %>
+                                    N/A
+                                <% } %>
+
+                            </td>
+
+
+                        </tr>
+                    <% }); %>
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+
+
+        function toggleCheckbox(checkbox_meno) {
+
+            if(checkbox_meno == "checkbox_pos"){
+
+                document.getElementById('checkbox_neg').checked = false;
+                document.getElementById('smer').value = "POS";
+                document.querySelector('form').submit();
+
+
+            } else {
+
+                document.getElementById('checkbox_pos').checked = false;
+                document.getElementById('smer').value = "NEG";
+                document.querySelector('form').submit();
+
+            }
+        
+        };
+
+        function navigate(direction) {
+            document.getElementById('direction').value = direction;
+            document.querySelector('form').submit();
+        }
+
+
+        let dataGraf_obj = ' <%-JSON.stringify(dataJSON) %> ';
+
+        console.log(dataGraf_obj);
+        let dataGraf2 = JSON.parse(dataGraf_obj);
+
+        console.log(dataGraf2);
+
+        let smer = dataGraf2.smer;
+        let dataGraf = dataGraf2.lmol;
+
+
+        const quantity = dataGraf.map(item => item.quantity || null);
+        const price = dataGraf.map(item => item.price || null);
+
+
+
+        let cumulativeSum = 0;
+
+        if(smer == "POS"){
+
+            quantity.unshift(0);
+            price.unshift(0);
+            quantity_sum =  quantity.map(value => cumulativeSum += value);
+
+        } else {
+
+            quantity_sum =  quantity.map(value => cumulativeSum += value);
+        }
+    
+        let chart_config = {
+            
+            type: 'line',
+            data: {
+                labels: quantity_sum, // x-axis data
+                datasets: [{
+                    label: 'Cenovy rebricek SK',
+                    data: price, // y-axis data
+                    stepped: true, // Makes the line stepped
+                    borderColor: 'rgb(59, 88, 5)',
+                    backgroundColor: 'rgba(0, 0, 255, 0.1)',
+                    borderWidth: 2,
+                    pointRadius: 4,
+                    pointBackgroundColor: 'rgb(59, 88, 5)'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Cenovy rebricek pre <%= dataJSON.perioda %> ',
+                        font: { size: 18 }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                return `Price: ${context.raw}`;
+                            },
+                            title: function (context) {
+                                return `Running Sum: ${context[0].label}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        type: 'linear', // Ensures x-axis is treated as numerical data
+                        title: {
+                            display: true,
+                            text: 'Cenový rebríček',
+                            font: { size: 14 }
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Cena [Eur/Mwh]',
+                            font: { size: 14 }
+                        }
+                    }
+                }
+            }
+        };
+
+        
+
+        const ctx = document.getElementById('myChart').getContext('2d');
+        new Chart(ctx, chart_config);
+
+
+    </script>
+
+<script src="js/script.js"></script>
+
+</body>
+</html>

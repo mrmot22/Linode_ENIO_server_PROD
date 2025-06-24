@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enio | Cena DT vs Cena odchýlky</title>
+    <link href="/css/style.css" rel="stylesheet" type="text/css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            <img src="/img/Enio_wordmark_black_background.jpg" alt="Logo" style="height: 50px; width: auto;">
+        </div>
+        <form action="/RE-SEPS" method="POST" class="navigation-form">
+            <input type="hidden" name="direction" id="direction" />
+            <input type="hidden" name="sluzbaFinder" id="sluzbaFinder" value="<%= sluzbaFinder %>" />
+            <button type="button" class="triangle-button backward" onclick="navigate('backward')"></button>
+            <input type="text" name="currentDay" id="currentDay" value="<%= currentDay %>" />
+            <button type="button" class="triangle-button forward" onclick="navigate('forward')"></button>
+        </form>
+
+    </div>
+    <div class="navigate-line">
+        <div id="home-icon" onclick="toggleNav()">
+            <img src="/img/Enio-home-icon-small.png" alt="home" style="height: 20px; width: auto;">
+        </div>
+        <div class="home-text">Výsledky denného trhu vs odchýlka sústavy</div>
+        <div class="checkbox-group">
+            <label for="myListBox">Výber služby:</label>
+            <select id="myListBox" name="myListBox" onchange="zmenaSluzby(event)">
+
+                <option value ="spolu" <% if ( sluzbaFinder  == "spolu") { %><%= "selected" %><% } %> >Spolu</option>
+                <option value ="afrr" <% if ( sluzbaFinder  == "afrr") { %><%= "selected" %><% } %> >aFRR</option>
+                <option value ="trv3" <% if ( sluzbaFinder  == "trv3") { %><%= "selected" %><% } %> >TRV3</option>
+                <option value ="mfrr_sa" <% if ( sluzbaFinder  == "mfrr_sa") { %><%= "selected" %><% } %> >mFRR SA</option>
+                <option value ="mfrr_da" <% if ( sluzbaFinder  == "mfrr_da") { %><%= "selected" %><% } %> >mFRR DA</option>
+
+            </select>
+        </div>
+    </div>
+
+    <%- include('../partials/navigator') %>
+
+
+    </div>
+
+    <div class="container">
+        <div class="left">
+            <canvas id="myChart"></canvas>
+        </div>
+        <div class="right" width="600px">
+            <h3>Prehľad cien DT a ceny odchýlky</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <% if (sluzbaFinder === "spolu") { %>
+                            <th>Perioda</th>
+                            <th>Čas</th>  
+                            <th>aFRR +</th>
+                            <th>aFRR -</th>
+                            <th>TRV +</th>
+                            <th>TRV -</th>
+                        <% } %>
+                        <% if (sluzbaFinder === "afrr") { %>
+                            <th>Perioda</th>
+                            <th>Čas</th>  
+                            <th>aFRR +</th>
+                            <th>aFRR -</th>
+                        <% } %>
+                        <% if (sluzbaFinder === "trv3") { %>
+                            <th>Perioda</th>
+                            <th>Čas</th>  
+                            <th>aFRR +</th>
+                            <th>aFRR -</th>
+                        <% } %>
+                        <% if (sluzbaFinder === "mfrr_sa") { %>
+                            <th>Perioda</th>
+                            <th>Čas</th>  
+                            <th>mFRR SA +</th>
+                            <th>mFRR SA -</th>
+                        <% } %>
+                        <% if (sluzbaFinder === "mfrr_da") { %>
+                            <th>Perioda</th>
+                            <th>Čas</th>  
+                            <th>mFRR DA +</th>
+                            <th>mFRR DA -</th>
+                        <% } %>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (sluzbaFinder === "spolu") { %>  
+                        <% dataJSON.forEach(function(item) { %>
+                            <tr>
+                                <td class="timestamp"><%= item.qh_num %></td>
+                                <td class="timestamp"><%= item.utc_cas %></td>
+
+                                <td>
+                                    <% if (item.aFRRP_RE !== null && item.aFRRP_RE !== undefined) { %>
+                                        <%= (item.aFRRP_RE / 4).toFixed(3) %>
+                                    <% } else { %>
+                                        N/A
+                                    <% } %>
+
+                                </td>
+                                <td>
+                                    <% if (item.aFRRN_RE !== null && item.aFRRN_RE !== undefined) { %>
+                                        <%= (item.aFRRN_RE / 4).toFixed(3) %>
+                                    <% } else { %>
+                                        N/A
+                                    <% } %>
+
+                                </td>
+                                <td>
+                                    <% if (item.TRV3P_RE !== null && item.TRV3P_RE !== undefined) { %>
+                                        <%= (item.TRV3P_RE / 4).toFixed(3) %>
+                                    <% } else { %>
+                                        N/A
+                                    <% } %>
+                                </td>
+                                
+                                <td>
+                                    <% if (item.TRV3N_RE !== null && item.TRV3N_RE !== undefined) { %>
+                                        <%= (item.TRV3N_RE / 4).toFixed(3) %>
+                                    <% } else { %>
+                                        N/A
+                                    <% } %>
+                                </td>
+
+                            </tr>
+                        <% }); %>
+                    <% } %>
+                    
+                    
+                    <% if (sluzbaFinder === "afrr") { %>  
+                        <% dataJSON.forEach(function(item) { %>
+                            <tr>
+                                <td class="timestamp"><%= item.qh_num %></td>
+                                <td class="timestamp"><%= item.utc_cas %></td>
+
+                                <td>
+                                    <% if (item.aFRRP_RE !== null && item.aFRRP_RE !== undefined) { %>
+                                        <%= (item.aFRRP_RE / 4).toFixed(3) %>
+                                    <% } else { %>
+                                        N/A
+                                    <% } %>
+
+                                </td>
+                                <td>
+                                    <% if (item.aFRRN_RE !== null && item.aFRRN_RE !== undefined) { %>
+                                        <%= (item.aFRRN_RE / 4).toFixed(3) %>
+                                    <% } else { %>
+                                        N/A
+                                    <% } %>
+
+                                </td>
+                            </tr>
+                        <% }); %>
+                    <% } %>
+
+                    <% if (sluzbaFinder === "trv3") { %>  
+                        <% dataJSON.forEach(function(item) { %>
+                            <tr>
+                                <td class="timestamp"><%= item.qh_num %></td>
+                                <td class="timestamp"><%= item.utc_cas %></td>
+                                <td>
+                                    <% if (item.TRV3P_RE !== null && item.TRV3P_RE !== undefined) { %>
+                                        <%= (item.TRV3P_RE / 4).toFixed(3) %>
+                                    <% } else { %>
+                                        N/A
+                                    <% } %>
+                                </td>
+                                
+                                <td>
+                                    <% if (item.TRV3N_RE !== null && item.TRV3N_RE !== undefined) { %>
+                                        <%= (item.TRV3N_RE / 4).toFixed(3) %>
+                                    <% } else { %>
+                                        N/A
+                                    <% } %>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    <% } %>
+                                        
+                    <% if (sluzbaFinder === "mfrr_sa") { %>  
+                        <% dataJSON.forEach(function(item) { %>
+                            <tr>
+                                <td class="timestamp"><%= item.qh_num %></td>
+                                <td class="timestamp"><%= item.utc_cas %></td>
+
+                                <td>
+                                    <% if (item.mFRRP_SA_RE !== null && item.mFRRP_SA_RE !== undefined) { %>
+                                        <%= (item.mFRRP_SA_RE / 4).toFixed(3) %>
+                                    <% } else { %>
+                                        N/A
+                                    <% } %>
+
+                                </td>
+                                <td>
+                                    <% if (item.mFRRN_SA_RE !== null && item.mFRRN_SA_RE !== undefined) { %>
+                                        <%= (item.mFRRN_SA_RE / 4).toFixed(3) %>
+                                    <% } else { %>
+                                        N/A
+                                    <% } %>
+
+                                </td>
+                            </tr>
+                        <% }); %>
+                    <% } %>
+
+                                                            
+                    <% if (sluzbaFinder === "mfrr_da") { %>  
+                        <% dataJSON.forEach(function(item) { %>
+                            <tr>
+                                <td class="timestamp"><%= item.qh_num %></td>
+                                <td class="timestamp"><%= item.utc_cas %></td>
+
+                                <td>
+                                    <% if (item.mFRRP_DA_RE !== null && item.mFRRP_DA_RE !== undefined) { %>
+                                        <%= (item.mFRRP_DA_RE / 4).toFixed(3) %>
+                                    <% } else { %>
+                                        N/A
+                                    <% } %>
+
+                                </td>
+                                <td>
+                                    <% if (item.mFRRN_DA_RE !== null && item.mFRRN_DA_RE !== undefined) { %>
+                                        <%= (item.mFRRN_DA_RE / 4).toFixed(3) %>
+                                    <% } else { %>
+                                        N/A
+                                    <% } %>
+
+                                </td>
+                            </tr>
+                        <% }); %>
+                    <% } %>
+
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+
+        let dataGraf_obj = ' <%-JSON.stringify(dataJSON) %> ';
+        let dataGraf = JSON.parse(dataGraf_obj);
+        let sluzbaFinder = '<%= sluzbaFinder %>';
+
+        console.log(dataGraf);
+
+        let cas = dataGraf.map(item => item.utc_cas || null);
+        let char_dataset;
+
+        if (sluzbaFinder === "spolu") {
+
+            let vysledok_aFRR = dataGraf.map(item => (item.aFRRP_RE - item.aFRRN_RE) / 4 || null);
+            let vysledok_TRV3 = dataGraf.map(item => (item.TRV3P_RE - item.TRV3N_RE) / 4 || null);
+
+            char_dataset = {
+                labels: cas,
+                datasets: [
+                {
+                    label: 'Aktivovaná aFRR',
+                    data: vysledok_aFRR,
+                    backgroundColor: 'rgba(181, 238, 71, 0.6)',
+                    borderColor: 'rgba(96, 143, 6, 0.6)',
+                    borderWidth: 2
+                },
+                {
+                    label: 'Aktivovaná TRV3',
+                    data: vysledok_TRV3,
+                    backgroundColor: 'rgba(2, 128, 27, 0.6)',
+                    borderColor: 'rgba(2, 110, 23, 0.6)',
+                    borderWidth: 2
+                }
+                ]
+
+            }
+
+        }  else if (sluzbaFinder === "afrr"){
+
+            let aFRRP = dataGraf.map(item => item.aFRRP_RE / 4 || null);
+            let aFRRN = dataGraf.map(item => item.aFRRN_RE / -4 || null);
+
+            char_dataset = {
+                labels: cas,
+                datasets: [
+                {
+                    label: 'Aktivovaná aFRR+',
+                    data: aFRRP,
+                    backgroundColor: 'rgba(181, 238, 71, 0.6)',
+                    borderColor: 'rgba(96, 143, 6, 0.6)',
+                    borderWidth: 2
+                },
+                {
+                    label: 'Aktivovaná aFRR-',
+                    data: aFRRN,
+                    backgroundColor: 'rgba(161, 209, 65, 0.6)',
+                    borderColor: 'rgba(96, 143, 6, 0.6)',
+                    borderWidth: 2
+                }
+                ]
+
+            }
+
+        }  else if (sluzbaFinder === "trv3"){
+
+            let TRV3P = dataGraf.map(item => item.TRV3P_RE / 4 || null);
+            let TRV3N = dataGraf.map(item => item.TRV3N_RE / -4 || null);
+
+            char_dataset = {
+                labels: cas,
+                datasets: [
+                {
+                    label: 'Aktivovaná TRV3+',
+                    data: TRV3P,
+                    backgroundColor: 'rgba(113, 214, 133, 0.8)',
+                    borderColor: 'rgba(96, 143, 6, 0.6)',
+                    borderWidth: 2
+                },
+                {
+                    label: 'Aktivovaná TRV3-',
+                    data: TRV3N,
+                    backgroundColor: 'rgba(181, 238, 71, 0.6)',
+                    borderColor: 'rgba(139, 213, 154, 0.8)',
+                    borderWidth: 2
+                }
+                ]
+
+            }
+
+        } else if (sluzbaFinder === "mfrr_da"){
+
+            
+            let mFRRP = dataGraf.map(item => item.mFRRP_DA_RE / 4 || null);
+            let mFRRN = dataGraf.map(item => item.mFRRN_DA_RE / -4 || null);
+
+            char_dataset = {
+                labels: cas,
+                datasets: [
+                {
+                    label: 'Aktivovaná mFRR DA +',
+                    data: mFRRP,
+                    backgroundColor: 'rgba(40, 155, 63, 0.8)',
+                    borderColor: 'rgba(96, 143, 6, 0.6)',
+                    borderWidth: 2
+                },
+                {
+                    label: 'Aktivovaná mFRR DA -',
+                    data: mFRRN,
+                    backgroundColor: 'rgba(30, 113, 47, 0.8)',
+                    borderColor: 'rgba(30, 113, 47, 0.8))',
+                    borderWidth: 2
+                }
+                ]
+
+            }
+
+        } else if (sluzbaFinder === "mfrr_sa"){
+
+            let mFRRP = dataGraf.map(item => item.mFRRP_SA_RE / 4 || null);
+            let mFRRN = dataGraf.map(item => item.mFRRN_SA_RE / -4 || null);
+
+            char_dataset = {
+                labels: cas,
+                datasets: [
+                {
+                    label: 'Aktivovaná mFRR SA +',
+                    data: mFRRP,
+                    backgroundColor: 'rgba(40, 155, 63, 0.8)',
+                    borderColor: 'rgba(96, 143, 6, 0.6)',
+                    borderWidth: 2
+                },
+                {
+                    label: 'Aktivovaná mFRR SA -',
+                    data: mFRRN,
+                    backgroundColor: 'rgba(30, 113, 47, 0.8)',
+                    borderColor: 'rgba(30, 113, 47, 0.8)',
+                    borderWidth: 2
+                }
+                ]
+
+            }
+
+        }
+
+
+        let delayed;
+
+        function zmenaSluzby(event) {
+            const selectedValue = event.target.value;
+            document.getElementById('sluzbaFinder').value = selectedValue;
+            document.querySelector('form').submit();
+
+        };
+
+        function navigate(direction) {
+            document.getElementById('direction').value = direction;
+            document.querySelector('form').submit();
+        }
+    
+        console.log("Data pre graf:", char_dataset);
+
+        const ctx = document.getElementById('myChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: char_dataset,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: {
+                    onComplete: () => {
+                        delayed = true;
+                    },
+                    
+                    delay: (context) => {
+                    
+                        let delay = 0;
+                        
+                        if (context.type === 'data' && context.mode === 'default' && !delayed) {
+                                delay = context.dataIndex * 20 + context.datasetIndex * 300;
+                        }
+                    return delay;
+                    
+                    },
+                },
+                scales: {
+                    x: {
+                        stacked: true
+                    },
+                    y: {
+                        stacked: true
+                    }
+                }
+            }
+        });
+
+    </script>
+
+<script src="js/script.js"></script>   <!--script, ktorý je zodpovedný pre navigátora-->
+
+</body>
+</html>

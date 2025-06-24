@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enio | Cena DT vs ceny IDA</title>
+    <link href="/css/style.css" rel="stylesheet" type="text/css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            <img src="/img/Enio_wordmark_black_background.jpg" alt="Logo" style="height: 50px; width: auto;">
+        </div>
+        <form action="/PI-4s" method="POST" class="navigation-form">
+            <input type="hidden" name="direction" id="direction" />
+            <input type="hidden" name="qh_num_year" id="qh_num_year" value="<%= dataJSON.qh_num_year %>" />
+
+            <button type="button" class="triangle-button backward" onclick="navigate('backward')"></button>
+            <input type="text" name="currentHour" id="currentHour" value="<%= dataJSON.qh_perioda %>" />
+
+            <button type="button" class="triangle-button forward" onclick="navigate('forward')"></button>
+        </form>
+
+    </div>
+    <div class="navigate-line">
+        <div id="home-icon" onclick="toggleNav()">
+            <img src="/img/Enio-home-icon-small.png" alt="home" style="height: 20px; width: auto;">
+        </div>
+        <div class="home-text">Výsledky PICASSO pre danú periodu</div>
+    </div>
+
+    <%- include('../partials/navigator') %>
+
+    </div>
+
+    <div class="container">
+        <div class="left">
+            <canvas id="myChart"></canvas>
+        </div>
+        <div class="right">
+            <h3>Prehľad PICASSO pre danú periodu </h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Perioda</th>
+                        <th>Cena RE - Pozitívna</th>
+                        <th>Cena RE - Negatívna</th>
+
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                    <% dataJSON.ceny_SEPS.forEach(function(item) { %>
+                        <tr>
+                            <td class="timestamp"><%= item.cas %></td>
+
+                            <td>
+                                <% if (item.cena_SEPS_POS !== null && item.cena_SEPS_POS !== undefined) { %>
+                                    <%= item.cena_SEPS_POS.toFixed(2) %>
+                                <% } else { %>
+                                    N/A
+                                <% } %>
+
+                            </td>
+
+                            <td>
+                                <% if (item.cena_SEPS_NEG !== null && item.cena_SEPS_NEG !== undefined) { %>
+                                    <%= item.cena_SEPS_NEG.toFixed(2) %>
+                                <% } else { %>
+                                    N/A
+                                <% } %>
+
+                            </td>
+
+                        </tr>
+                    <% }); %>
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+
+        let dataGraf_obj = ' <%-JSON.stringify(dataJSON) %> ';
+
+        let data_15ka = JSON.parse(dataGraf_obj);
+        let dataGraf = data_15ka.ceny_SEPS;
+
+        const labels = dataGraf.map(item => item.cas);
+        const Cena_POS = dataGraf.map(item => item.cena_SEPS_POS || null);
+        const Cena_NEG = dataGraf.map(item => item.cena_SEPS_NEG || null);
+
+
+        function navigate(direction) {
+            document.getElementById('direction').value = direction;
+            document.querySelector('form').submit();
+        }
+    
+
+        const ctx = document.getElementById('myChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                {
+                    label: 'Cena kladnej RE',
+                    data: Cena_POS,
+                    backgroundColor: 'rgba(51, 255, 119, 0.8)',
+                    borderColor: 'rgba(51, 255, 119, 0.8)',
+                    borderWidth: 2
+                
+                },
+                {
+                    label: 'Cena zapornej RE',
+                    data: Cena_NEG,
+                    backgroundColor: 'rgba(255, 175 , 155, 0.8)', 
+                    borderColor: 'rgba(255, 175 , 155, 0.8)', 
+                    borderWidth: 2
+                }
+
+            ]},
+            options: {
+                interaction: {
+                    intersect: false,
+                    mode: 'index'},
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+    </script>
+
+<script src="js/script.js"></script>
+
+</body>
+</html>

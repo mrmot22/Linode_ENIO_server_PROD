@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enio | Ceny PICASSO</title>
+    <link href="/css/style.css" rel="stylesheet" type="text/css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            <img src="/img/Enio_wordmark_black_background.jpg" alt="Logo" style="height: 50px; width: auto;">
+        </div>
+        <form action="/PI-prehlad" method="POST" class="navigation-form">
+            <input type="hidden" name="direction" id="direction" />
+            <input type="hidden" name="smer" id="smer" value="<%= smer %>" />
+            <button type="button" class="triangle-button backward" onclick="navigate('backward')"></button>
+            <input type="text" name="currentHour" id="currentHour" value="<%= currentHour %>" />
+            <button type="button" class="triangle-button forward" onclick="navigate('forward')"></button>
+        </form>
+
+    </div>
+    <div class="navigate-line">
+        <div id="home-icon" onclick="toggleNav()">
+            <img src="/img/Enio-home-icon-small.png" alt="home" style="height: 20px; width: auto;">
+        </div>
+        <div class="home-text">Ceny PICASSO - prehľad cien aktivovaných ponúk zo strany centrálného regulátora</div>
+        <div class="checkbox-group">
+            <label>
+                <input type="checkbox" id="checkbox_pos" onclick="toggleCheckbox('checkbox_pos')" 
+                <% if (smer == "POS") { %>
+                    <%= "checked" %>
+                    <% } %>>Ceny PICASSO pre kladnú regulačnú elektrinu
+            </label>
+            <label>
+                <input type="checkbox" id="checkbox_neg" onclick="toggleCheckbox('checkbox_neg')"
+                <% if (smer == "NEG") { %>
+                    <%= "checked" %>
+                    <% } %>>Ceny PICASSO pre zápornú regulačnú elektrinu
+            </label>
+        </div>
+
+    </div>
+
+    <%- include('../partials/navigator') %>
+
+    </div>
+
+    <div class="container">
+        <div class="left">
+            <canvas id="myChart"></canvas>
+        </div>
+        <div class="right">
+            <h3>
+                <% if (smer == "POS") { %>
+                    <%= "Prehľad cien PICASSO - Kladná RE" %>
+                    <% } else { %>
+                    <%= "Prehľad cien PICASSO - Záporná RE" %>
+                    <% } %>
+                </h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Perioda</th>
+                        <th>Čas</th>
+                        <th>Cena min</th>
+                        <th>Cena max</th>
+                        <th>Cena avg</th>
+
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                    <% dataJSON.forEach(function(item) { %>
+                        <tr>
+                            <td class="timestamp"><%= item.qh_num %></td>
+                            <td class="timestamp"><%= item.perioda %></td>
+
+                            <td>
+                                <% if (item.cena_min !== null && item.cena_min!== undefined) { %>
+                                    <%= item.cena_min.toFixed(2) %>
+                                <% } else { %>
+                                    N/A
+                                <% } %>
+                            </td>
+
+                            <td>
+                                <% if (item.cena_max !== null && item.cena_max !== undefined) { %>
+                                    <%= item.cena_max.toFixed(2) %>
+                                <% } else { %>
+                                    N/A
+                                <% } %>
+
+                            </td>
+
+                            <td>
+                                <% if (item.cena_avg !== null && item.cena_avg !== undefined) { %>
+                                    <%= item.cena_avg.toFixed(2) %>
+                                <% } else { %>
+                                    N/A
+                                <% } %>
+
+                            </td>
+
+
+                        </tr>
+                    <% }); %>
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+
+
+        function toggleCheckbox(checkbox_meno) {
+
+            if(checkbox_meno == "checkbox_pos"){
+
+                document.getElementById('checkbox_neg').checked = false;
+                document.getElementById('smer').value = "POS";
+                document.querySelector('form').submit();
+
+
+            } else {
+
+                document.getElementById('checkbox_pos').checked = false;
+                document.getElementById('smer').value = "NEG";
+                document.querySelector('form').submit();
+
+            }
+        
+        };
+
+        function navigate(direction) {
+            document.getElementById('direction').value = direction;
+            document.querySelector('form').submit();
+        }
+
+
+        let dataGraf_obj = ' <%-JSON.stringify(dataJSON) %> ';
+        let dataGraf = JSON.parse(dataGraf_obj);
+
+        const labels = dataGraf.map(item => item.perioda);
+        const Cena_min = dataGraf.map(item => item.cena_min || null);
+        const Cena_max = dataGraf.map(item => item.cena_max|| null);
+        const Cena_avg = dataGraf.map(item => item.cena_avg || null);
+
+
+    
+
+        const ctx = document.getElementById('myChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                {
+                    label: 'Cena PICASSO - min',
+                    data: Cena_min,
+                    type: 'line',
+                    backgroundColor: 'rgba(51, 255, 119, 0.8)',
+                    borderColor: 'rgba(51, 255, 119, 0.8)',
+                    borderWidth: 1
+                
+                },
+                {
+                    label: 'Cena PICASSO - max',
+                    data: Cena_max,
+                    backgroundColor: 'rgba(179, 224, 255, 0.8)', 
+                    borderColor: 'rgba(179, 224, 255, 0.8)', 
+                    borderWidth: 2
+                },
+                {
+                    label: 'Cena PICASSO - avg',
+                    data: Cena_avg,
+                    backgroundColor: 'red',
+                    borderColor: 'red',
+                    borderWidth: 2
+                }
+
+            ]},
+            options: {
+                interaction: {
+                    intersect: true,
+                    mode: 'index'},
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+    </script>
+
+<script src="js/script.js"></script>
+
+</body>
+</html>

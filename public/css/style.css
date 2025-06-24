@@ -1,0 +1,302 @@
+/* General Styles */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+
+}
+
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* Space between logo and form */
+    padding: 0px;
+    background-color: #b5ee47ff;
+}
+
+.logo {
+    flex: 0 0 auto;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.navigation-form {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px; /* Space between elements */
+}
+
+
+/* Home Icon Styling */
+
+
+.navigate-line {
+
+    display: flex; /* Makes the child elements align horizontally */
+    align-items: center; /* Vertically centers the child elements */
+    gap: 10px; /* Adds space between the icon and text (optional) */
+
+
+}
+
+
+
+#home-icon {
+    font-size: 24px;
+    cursor: pointer;
+    top: 7px;
+    padding-left: 20px;
+    z-index: 1000;
+}
+
+.home-text {
+    padding-left: 0px;
+    color: #608f06ff;
+    padding-top: 0px;
+    margin: 0; /* Removes default margin (optional) */
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+}
+
+nav ul {
+    list-style-type: none;
+    padding-left: 10;
+  }
+  
+nav li {
+    display: list-item;
+    margin-right: 15px;
+  }
+  
+nav a {
+    text-decoration: none;
+    color: #333;
+  }
+
+nav a:hover {
+    color: #007BFF;
+  }
+
+
+#currentHour {
+    padding: 5px;
+    font-size: 16px;
+    text-align: center;
+    width: 200px;
+}
+
+
+#currentDay {
+    padding: 5px;
+    font-size: 16px;
+    text-align: center;
+    width: 200px;
+}
+
+
+.triangle-button {
+    width: 0;
+    height: 0;
+    border-style: solid;
+    background: transparent;
+    cursor: pointer;
+}
+
+.backward {
+    border-width: 15px 20px 15px 0; /* Top Right Bottom Left */
+    border-color: transparent #608f06ff transparent transparent;
+}
+
+.forward {
+    border-width: 15px 0 15px 20px; /* Top Right Bottom Left */
+    border-color: transparent transparent transparent #608f06ff;
+}
+
+.triangle-button:hover {
+    border-color: transparent rgb(59, 88, 5) transparent transparent; /* Darker shade on hover */
+}
+
+.forward:hover {
+    border-color: transparent transparent transparent rgb(59, 88, 5);
+}
+
+
+
+/* Container Layout */
+.container {
+    display: flex;
+    height: calc(100vh - 100px); /* Adjust for header height */
+}
+
+/* Left Section Styles */
+.left {
+    flex: 1;
+    padding: 20px;
+    padding-bottom:40px;
+    box-sizing: border-box;
+}
+
+
+.left-dva-grafy {
+    flex: 1;
+    padding: 20px;
+    padding-bottom: 40px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 20px; /* Adds space between the two charts */
+}
+
+/* Right Section Styles */
+
+.right {
+    width: auto;
+    max-width: 550px;
+    padding: 20px;
+    box-sizing: border-box;
+    overflow-y: auto;
+    background-color: #f8f9fa;
+}
+
+
+/* Chart Container Styles */
+.chart-dva-vertikalne {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* First Chart (87% of the left container's height) */
+.chart-dva-vertikalne:first-child {
+    height: 70%;
+}
+
+/* Second Chart (30% of the left container's height) */
+.chart-dva-vertikalne:last-child {
+    height: 30%;
+}
+
+
+/* Table Styles */
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+table th, table td {
+    width: 150px;
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+    font-family: monospace;
+    font-size: 13px;
+    
+}
+
+table th {
+    background-color: #608f06ff;
+    color: white;
+}
+
+/* Navigation Panel Styling */
+#nav-panel {
+    width: 250px;
+    height: 100%;
+    position: fixed;
+    top: 20;
+    left: -250px; /* Hide the panel by default */
+    background-color: #b5ee47ff;
+    transition: left 0.4s ease;
+    z-index: 999;
+}
+
+#nav-panel ul {
+    list-style-type: style type;;
+    padding: 0;
+    margin: 0;
+    padding-top: 10px;
+}
+
+#nav-panel ul li {
+    display: inline-flexbox;
+    padding: 10px;
+    padding-left: 15px;
+    text-align: center;
+}
+
+#nav-panel ul li a {
+    color: white;
+    text-decoration: none;
+    font-size: 14px;
+    color: rgb(4, 88, 1);
+    float: left;
+}
+
+#nav-panel ul li a:hover {
+    color: #a09999;
+    font-weight: bold;
+}
+
+/* Show the navigation panel */
+#nav-panel.active {
+    left: 0;
+}
+
+.nav-pan {
+    color: rgb(4, 88, 1);
+    padding-top: 25px;
+    padding-left: 5px;
+}
+
+.checkbox-group {
+
+    display: flex;
+    gap: 10px;
+    margin-left: auto; /* Pushes checkboxes to the right */
+    padding-right: 50px;
+    color: #608f06ff;
+    font-size: 13px;
+}
+
+
+select {
+    font-size: 14px;
+    border: none;
+    background: white;
+  }
+
+input[type="checkbox"] {
+    width: 15px;
+    height: 15px;
+    appearance: none; /* Remove default styling */
+    border: 2px solid #608f06ff;
+    border-radius: 4px;
+    background-color: white;
+    cursor: pointer;
+    position: relative;
+}
+
+/* Checked state */
+input[type="checkbox"]:checked {
+    background-color: #608f06ff; /* Change checkbox color when checked */
+    border-color: #608f06ff;
+}
+
+/* Add a checkmark using ::after */
+input[type="checkbox"]:checked::after {
+    content: '✔';
+    color: white;
+    font-size: 12px;
+    position: absolute;
+    left: 3px;
+    top: -1px;
+}   
+
+label {
+    display: flex;
+    align-items: center;
+    gap: 5px; /* Space between checkbox and text */
+    font-size: 13px; /* Adjust text size */
+    cursor: pointer;
+}

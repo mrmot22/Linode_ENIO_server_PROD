@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enio - prihlásenie</title>
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+        }
+        .left-side {
+            width: 50%;
+            background-color: black;
+
+        }
+        .logo-container {
+            display: flex;
+            justify-content: flex-end; /* Aligns content to the right */
+            align-items: flex-end; /* Aligns content to the bottom */
+            height: 100vh; /* Full viewport height */
+            width: 100%; /* Full width */
+            padding: 0px; /* Optional: Add some padding so the image isn't touching the edges */
+        }
+
+
+        .right-side {
+            width: 50%;
+            background-color: #b5ee47ff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .logo {
+            margin-bottom: 20px;
+        }
+        .notifikacie {
+            font-family: Segoe UI, Frutiger, Frutiger Linotype, Dejavu Sans, Helvetica Neue, Arial, sans-serif;
+            font-size: 14px; font-style: normal; 
+            margin-top: 40px;
+        }
+        .login-form {
+            width: 300px;
+        }
+        .login-form input, .login-form button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .login-form button {
+            background-color: rgb(96, 138, 13);
+            color: white;
+            border: none;
+            cursor: pointer;
+            width: 107%;
+        }
+        .login-form button:hover {
+            background-color: rgb(66, 94, 10);
+        }
+    </style>
+</head>
+<body>
+    <div class="left-side">
+        <div class="logo-container">
+            <img src="/img/Enio_render_BG.jpg" alt="Logo" style="height: 750px; width: auto;">
+        </div>
+    </div>
+    <div class="right-side">
+        <div class="logo">
+            <img src="/img/Enio_wordmark_black_transparent.png" alt="Logo" style="height: 190px; width: auto; padding-left: 20px;">
+        </div>
+        <form class="login-form" action="/login" method="POST">
+            <input id="email" type="email" placeholder="e-mail" name="email" required>
+            <input id ="password" type="password" placeholder="password" name = "password" required>
+            <button type="submit">Login</button>
+        </form>
+        <div class="notifikacie">
+
+            <% if (messages.error) { %>
+                <%= messages.error %>
+            <% } %>
+
+        </div>
+    </div>
+</body>
+</html>
