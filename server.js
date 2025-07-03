@@ -35,7 +35,7 @@ app.use(passport.session());
 
 app.set('view engine', 'ejs');
 
-const mongoURI = process.env.MONGO_URL;
+const mongoURI = process.env.DODB_URI;
 
 mongoose.connect(mongoURI, { })
     .then(() => console.log('Connected to MongoDB'))
@@ -63,7 +63,6 @@ app.post('/login',
     failureFlash: true
   })
  )
-
 
 // Nadefinovanie routerov
 
