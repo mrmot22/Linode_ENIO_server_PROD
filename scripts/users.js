@@ -6,10 +6,10 @@ async function vlozUsera(req,res){
 
  let user = [
   {
-    "meno":"Paľko",
-    "priezvisko":"Urbanek",
-    "email":"palkourbanek45@gmail.com",
-    "heslo":"suljpa.222"
+    "meno":"Evgeny",
+    "priezvisko":"Korotenko",
+    "email":"evgeny.korotenko@encare.sk",
+    "heslo":"Evgeny.654"
   }]; 
 
 db.insert(user);
@@ -18,7 +18,7 @@ db.insert(user);
 
 async function zasifruj(req,res){
 
-    let heslo = "v9s|zG21h";
+    let heslo = "Evgeny.654";
 
     try {
 
@@ -26,7 +26,7 @@ async function zasifruj(req,res){
         const hashedPassword = await bcrypt.hash(heslo, 10)
 
         db.update(
-            { email: "palkourbanek45@gmail.com" }, 
+            { email: "evgeny.korotenko@encare.sk" }, 
             { $set: { heslo: hashedPassword}},
             {},// this argument was missing
             function (err, numReplaced) {
@@ -37,17 +37,9 @@ async function zasifruj(req,res){
       } catch {
        console.log(e)
       }
-    
+
 }
 
 //vlozUsera();
 zasifruj();
 
-
-/*
-
-heslo tomasove je:  tomas.ivicic@enio.sk | Heslo.Je123
-heslo moje je: igor.sulc@enio.sk | Nemam.222
-
-
-*/
