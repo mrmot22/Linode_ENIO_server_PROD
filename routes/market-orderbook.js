@@ -12,7 +12,7 @@ router.get('/', checkAuthenticated, async (req, res) => {
     let currentHours = today.getHours();
 
     // Set the date to tomorrow if it's past the typical market data release time
-    if (currentHours >= 11) {
+    if (currentHours >= 14) {
         tomorrow.setDate(today.getDate() + 1);
     }
 
