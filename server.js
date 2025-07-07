@@ -77,6 +77,7 @@ const PICASSO_UNIT_Router = require('./routes/PICASSO_unit')
 const DT_region_Router = require('./routes/DT_region')
 const RE_aktivovana_Router = require('./routes/SEPS_RE_aktiv')
 const PpS_disponibilita_Router = require('./routes/SEPS_PpS_dispo')
+const market_orderbook_Router = require('./routes/market-orderbook')
 
 
 // Využitie routerov pre jednotlivé routy
@@ -90,6 +91,7 @@ app.use('/PI-UNIT', PICASSO_UNIT_Router)
 app.use('/DT-region', DT_region_Router)
 app.use('/RE-SEPS', RE_aktivovana_Router)
 app.use('/PpS-SEPS', PpS_disponibilita_Router)
+app.use('/market-orderbook', market_orderbook_Router)
 
 // Start the server
 app.listen(port, () => {
