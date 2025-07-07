@@ -64,9 +64,8 @@ app.post('/login',
   })
  )
 
+ 
 // Nadefinovanie routerov
-
-
 const DT_vs_Odch_Router = require('./routes/DT_vs_Odch')
 const DT_vs_IDA_Router = require('./routes/DT_vs_IDA')
 const PICASSO_pre_Router = require('./routes/PICASSO_pre')

@@ -1,45 +1,51 @@
 const LocalStrategy = require('passport-local').Strategy
 const bcrypt = require('bcrypt')
-const Datastore = require('nedb');
-const db = new Datastore({ filename: './scripts/users.db', autoload: true });
+const mongoose = require('mongoose');
+require('dotenv').config();
+
+const userDbConnection = mongoose.createConnection(process.env.DODB2_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+});
+
+
+// Define User schema on that connection
+const UserSchema = new mongoose.Schema({
+  email: { type: String, required: true },
+  heslo: { type: String, required: true },
+});
+
+
+const User = userDbConnection.model('User', UserSchema, 'EnioUsers');
 
 function initialize(passport) {
-
-    passport.use(new LocalStrategy({ usernameField: 'email' }, async (email, password, done) => {
-      
-      db.findOne({ email }, (err, user) =>{
-        
-        if (err) return done(err);
-        if (!user) return done(null, false, { message: 'Užívateľ s daným emailom neexistuje.'});
-
-        bcrypt.compare(password, user.heslo, (err, isMatch) => {
-        
-          if (err) return done(err);
-          if (!isMatch) return done(null, false, { message: 'Nesprávny email alebo heslo' });
-  
-          return done(null, user);
-
-        })
-      })
-    }))
-  
-
-  passport.serializeUser((user, done) => {
-      done(null, user);
-  });
-  
-  passport.deserializeUser(async (id, done) => {
-
+  const authenticateUser = async (email, password, done) => {
     try {
+      // Normalize email (lowercase + trim whitespace)
+      const normalizedEmail = email.toLowerCase().trim();
+      const user = await User.findOne({ email: normalizedEmail });
 
-      const user = db.findOne({ _id: id})
-      done(null, user);
-    } catch {
+      if (!user) return done(null, false, { message: 'No user with that email' });
 
-      done(error, false);
+      const isMatch = await bcrypt.compare(password, user.heslo);
+      if (isMatch) return done(null, user);
+      else return done(null, false, { message: 'Password incorrect' });
+    } catch (err) {
+      return done(err);
     }
+  };
 
-  })
+  passport.use(new LocalStrategy({ usernameField: 'email' }, authenticateUser));
+
+  passport.serializeUser((user, done) => done(null, user.id));
+  passport.deserializeUser(async (id, done) => {
+    try {
+      const user = await User.findById(id);
+      done(null, user);
+    } catch (err) {
+      done(err);
+    }
+  });
 }
 
-module.exports = initialize
+module.exports = initialize;
