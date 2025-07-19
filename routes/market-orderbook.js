@@ -6,22 +6,24 @@ function checkAuthenticated(req, res, next) {
     res.redirect('/login');
 }
 
-router.get('/', checkAuthenticated, async (req, res) => {
-    const today = new Date();
-    const tomorrow = new Date(today);
-    let currentHours = today.getHours();
+router.get('/:period?', checkAuthenticated, async (req, res) => {
+    const today = new Date()
+    const tomorrow = new Date(today)
+    let currentHours = today.getHours()
 
     // Set the date to tomorrow if it's past the typical market data release time
     if (currentHours >= 14) {
-        tomorrow.setDate(today.getDate() + 1);
+        tomorrow.setDate(today.getDate() + 1)
     }
 
-    const formattedDate = tomorrow.toISOString().split('T')[0];
+    const formattedDate = tomorrow.toISOString().split('T')[0]
 
-    // The dataJSON part is a leftover from the copy, but we'll pass an empty array
-    // to prevent errors in the EJS template that still loops over it for the table.
-    // The chart itself will be populated by WebSockets.
-    res.render('market-orderbook', { currentHour: formattedDate, dataJSON: [] });
-});
+    // Validate period parameter - must be either 'period-15' or 'period-60'
+    let period = req.params.period
+    if (!period || (period !== 'period-15' && period !== 'period-60')) {
+        period = 'period-15' // Default to period-15 if invalid or missing
+    }
 
-module.exports = router; 
+    res.render('market-orderbook', { currentHour: formattedDate, dataJSON: [], period: period })
+})
+module.exports = router;

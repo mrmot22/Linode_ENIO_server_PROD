@@ -64,12 +64,12 @@ nav ul {
     list-style-type: none;
     padding-left: 10;
   }
-  
+
 nav li {
     display: list-item;
     margin-right: 15px;
   }
-  
+
 nav a {
     text-decoration: none;
     color: #333;
@@ -191,7 +191,7 @@ table th, table td {
     text-align: center;
     font-family: monospace;
     font-size: 13px;
-    
+
 }
 
 table th {
@@ -199,12 +199,16 @@ table th {
     color: white;
 }
 
+table#sell-orders-table th {
+    background-color: #e15050;
+}
+
 /* Navigation Panel Styling */
 #nav-panel {
     width: 250px;
     height: 100%;
     position: fixed;
-    top: 20;
+    top: 20px;
     left: -250px; /* Hide the panel by default */
     background-color: #b5ee47ff;
     transition: left 0.4s ease;
@@ -291,7 +295,7 @@ input[type="checkbox"]:checked::after {
     position: absolute;
     left: 3px;
     top: -1px;
-}   
+}
 
 label {
     display: flex;

@@ -1,500 +1,604 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enio | Vyhodnotenie DT</title>
-    <link href="/css/style.css" rel="stylesheet" type="text/css">
-    <script src="https://cdn.jsdelivr.net/npm/luxon@3.4.3/build/global/luxon.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.3.1/dist/chartjs-adapter-luxon.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial@0.2.0/dist/chartjs-chart-financial.min.js"></script>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Enio | Kniha jednoduchých objednávok</title>
+        <link href="/css/style.css" rel="stylesheet" type="text/css">
+        <script src="https://cdn.jsdelivr.net/npm/luxon@3.4.3/build/global/luxon.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.3.1/dist/chartjs-adapter-luxon.umd.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial@0.2.0/dist/chartjs-chart-financial.min.js"></script>
+    </head>
 
-</head>
-<body>
-    <div class="header">
-        <div class="logo">
-            <img src="/img/Enio_wordmark_black_background.jpg" alt="Logo" style="height: 50px; width: auto;">
-        </div>
-        <div class="navigation-form">
-            <button type="button" class="triangle-button backward" id="backward-btn"></button>
-            <input type="text" name="currentHour" id="currentHour" value="<%= currentHour %>" readonly />
-            <button type="button" class="triangle-button forward" id="forward-btn"></button>
-        </div>
-
-    </div>
-    <div style="display: flex; justify-content: space-between; align-items: center;">
-        <div class="navigate-line">
-          <div id="home-icon" onclick="toggleNav()">
-              <img src="/img/Enio-home-icon-small.png" alt="home" style="height: 20px; width: auto;">
-          </div>
-          <div class="home-text">Market orderbook</div>
+    <body>
+        <div class="header">
+            <div class="logo">
+                <img src="/img/Enio_wordmark_black_background.jpg" alt="Logo" style="height: 50px; width: auto;">
+            </div>
+            <div class="navigation-form">
+                <button type="button" class="triangle-button backward" id="backward-btn"></button>
+                <input type="text" name="currentHour" id="currentHour" value="<%= currentHour %>" readonly/>
+                <button type="button" class="triangle-button forward" id="forward-btn"></button>
+            </div>
         </div>
 
-        <div style="font-size: 12px; color: #888; margin-right: 10px;">
-            Market service status: <span id="websocket-status">connecting...</span> (last update: <span id="last-message-timestamp">N/A</span>)
-        </div>
-    </div>
-
-    <%- include('../partials/navigator') %>
-
-    </div>
-
-
-    <div class="container">
-        <div class="left">
-            <canvas id="myChart"></canvas>
-        </div>
-        <div class="right">
-            <h3>Select Period</h3>
-            <select id="period-selector" style="width: 100%; margin-bottom: 20px; padding: 4px;"></select>
-
-            <div style="display: flex; gap: 20px;">
-                <div style="flex: 1;">
-                    <h4>Buy Orders</h4>
-                    <table id="buy-orders-table">
-                        <thead>
-                            <tr>
-                                <th>Price</th>
-                                <th>Quantity</th>
-                                <th>Own Qty</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Populated by JS -->
-                        </tbody>
-                    </table>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div class="navigate-line">
+                <div id="home-icon" onclick="toggleNav()">
+                    <img src="/img/Enio-home-icon-small.png" alt="home" style="height: 20px; width: auto;">
                 </div>
-                <div style="flex: 1;">
-                    <h4>Sell Orders</h4>
-                    <table id="sell-orders-table">
-                        <thead>
-                            <tr>
-                                <th>Price</th>
-                                <th>Quantity</th>
-                                <th>Own Qty</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Populated by JS -->
-                        </tbody>
-                    </table>
+                <div class="home-text">Kniha jednoduchých objednávok</div>
+            </div>
+
+            <div style="font-size: 12px; color: #888; margin-right: 10px;">
+                Market service status: <span id="websocket-status">connecting...</span> (last update: <span id="last-message-timestamp">N/A</span>)
+            </div>
+        </div>
+
+        <%- include('../partials/navigator') %>
+
+        <div class="container">
+            <div class="left">
+                <canvas id="myChart"></canvas>
+            </div>
+            <div class="right">
+                <h3>Obchodná perióda</h3>
+                <select id="period-selector" style="width: 100%; margin-bottom: 20px; padding: 4px;"></select>
+
+
+                <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                    <div style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                        <div style="font-size: 12px; color: #888; margin-bottom: 5px">Najvyššia / najnižšia cena</div>
+                        <div id="price-range" style="font-size: 14px; font-weight: bold;">-</div>
+                    </div>
+                    <div style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                        <div style="font-size: 12px; color: #888; margin-bottom: 5px;">Celkové zobch. množstvo</div>
+                        <div id="total-volume" style="font-size: 14px; font-weight: bold;">-</div>
+                    </div>
+                    <div style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                        <div style="font-size: 12px; color: #888; margin-bottom: 5px;">Cena posl. obchodu</div>
+                        <div id="last-price" style="font-size: 14px; font-weight: bold;">-</div>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 20px;">
+                    <div style="flex: 1;">
+                        <h4>Nákup</h4>
+                        <table id="buy-orders-table">
+                            <thead>
+                                <tr>
+                                    <th>Cena</th>
+                                    <th>Množstvo</th>
+                                    <th>Own Qty</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div style="flex: 1;">
+                        <h4>Predaj</h4>
+                        <table id="sell-orders-table">
+                            <thead>
+                                <tr>
+                                    <th>Cena</th>
+                                    <th>Množstvo</th>
+                                    <th>Own Qty</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                              <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <script src="js/script.js"></script>
-    <script src="js/websocket-client.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // State variables
-            let chartData = [];
-            let periods = [];
-            let selectedPeriodKey = null;
-            let selectedDateStr = document.getElementById('currentHour').value;
+        <script src="/js/script.js"></script>
+        <script src="/js/websocket-client.js"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                // State variables
+                let chartData = []
+                let periods = []
+                let selectedPeriodKey = null
+                let selectedDateStr = document.getElementById('currentHour').value
 
-            // UI Elements
-            const statusElement = document.getElementById('websocket-status');
-            const timestampElement = document.getElementById('last-message-timestamp');
-            const backwardBtn = document.getElementById('backward-btn');
-            const forwardBtn = document.getElementById('forward-btn');
-            const dateInput = document.getElementById('currentHour');
-            const periodSelector = document.getElementById('period-selector');
-            const buyOrdersTbody = document.getElementById('buy-orders-table').querySelector('tbody');
-            const sellOrdersTbody = document.getElementById('sell-orders-table').querySelector('tbody');
+                const periodType = '<%= period %>'
 
-            // --- Chart Initialization ---
-            let financialChart = null;
+                const filterPeriods = (periods) => {
+                    const desiredDuration = periodType === 'period-15' ? 15 : 60
+                    return periods.filter(p => !p.period.isBlock &&
+                        ((new Date(p.period.end) - new Date(p.period.start)) / (1000 * 60)) === desiredDuration
+                    )
+                }
 
-            function formatISODateToCustomString(isoString) {
-              const date = new Date(isoString);
+                // UI Elements
+                const statusElement = document.getElementById('websocket-status')
+                const timestampElement = document.getElementById('last-message-timestamp')
+                const backwardBtn = document.getElementById('backward-btn')
+                const forwardBtn = document.getElementById('forward-btn')
+                const dateInput = document.getElementById('currentHour')
+                const periodSelector = document.getElementById('period-selector')
+                const buyOrdersTbody = document.getElementById('buy-orders-table').querySelector('tbody')
+                const sellOrdersTbody = document.getElementById('sell-orders-table').querySelector('tbody')
 
-              const day = date.getDate();
-              const month = date.getMonth() + 1; // Month is 0-indexed
-              const year = date.getFullYear();
-              const hours = date.getHours();
-              const minutes = date.getMinutes();
-              const seconds = date.getSeconds();
+                // --- Chart Initialization ---
+                let financialChart = null
 
-              // Pad single-digit numbers with a leading zero if needed
-              const pad = (num) => num.toString().padStart(2, '0');
+                function formatISODateToCustomString(isoString) {
+                    const date = new Date(isoString)
 
-              return `${day}.${month}.${year}, ${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
-            }
+                    const day = date.getDate()
+                    const month = date.getMonth() + 1 // Month is 0-indexed
+                    const year = date.getFullYear()
+                    const hours = date.getHours()
+                    const minutes = date.getMinutes()
+                    const seconds = date.getSeconds()
 
-            const initializeChart = () => {
-                const ctx = document.getElementById('myChart').getContext('2d');
-                if (!ctx) return;
+                    // Pad single-digit numbers with a leading zero if needed
+                    const pad = (num) => num.toString().padStart(2, '0')
 
-                financialChart = new Chart(ctx, {
-                    type: 'candlestick',
-                    data: {
-                        datasets: [{
-                            label: 'Market Order Book',
-                            data: [],
-                            color: {
-                                up: 'rgba(75, 192, 192, 0.8)',
-                                down: 'rgba(255, 99, 132, 0.8)',
-                                unchanged: 'rgba(201, 203, 207, 0.8)',
-                            }
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            x: {
-                                type: 'time',
-                                time: {
-                                    unit: 'minute',
-                                    tooltipFormat: 'MMM d, yyyy, h:mm:ss a',
-                                },
-                                title: {
-                                    display: true,
-                                    text: 'Time',
-                                },
-                            },
-                            y: {
-                                title: {
-                                    display: true,
-                                    text: 'Price',
-                                },
-                            },
+                    return `${day}.${month}.${year}, ${pad(hours)}:${pad(minutes)}:${pad(seconds)}`
+                }
+
+                const initializeChart = () => {
+                    const ctx = document.getElementById('myChart').getContext('2d')
+                    if (!ctx) return
+
+                    const startOfDay = new Date(selectedDateStr + 'T00:00:00.000Z')
+                    const endOfDay = new Date(startOfDay)
+                    endOfDay.setUTCDate(startOfDay.getUTCDate() + 1)
+
+                    financialChart = new Chart(ctx, {
+                        type: 'candlestick',
+                        data: {
+                            datasets: [{
+                                label: 'Market Order Book',
+                                data: [],
+                                color: {
+                                    up: 'rgba(75, 192, 192, 0.8)',
+                                    down: 'rgba(255, 99, 132, 0.8)',
+                                    unchanged: 'rgba(201, 203, 207, 0.8)',
+                                }
+                            }]
                         },
-                        plugins: {
-                            legend: {
-                                display: true,
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                x: {
+                                    type: 'linear',
+                                    min: 0,
+                                    max: 24,
+                                    afterBuildTicks: function (scale) {
+                                        const tickValues = [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 24]
+                                        scale.ticks = tickValues.map(v => ({ value: v }))
+                                    },
+                                    ticks: {
+                                        callback: function (value, index, ticks) {
+                                            value = ticks[index].value
+                                            return value === 24 ? '24:00' : value.toString().padStart(2, '0') + ':00'
+                                        }
+                                    },
+                                    title: {
+                                        display: true,
+                                        text: 'Time',
+                                    },
+                                },
+                                y: {
+                                    title: {
+                                        display: true,
+                                        text: 'Price',
+                                    },
+                                },
                             },
-                            tooltip: {
-                                mode: 'index',
-                                intersect: false,
-                                callbacks: {
-                                    label: (context) => {
-                                        const point = context.raw;
-                                        if (!point) return [];
-                                        return [`Open: ${point.o}`, `High: ${point.h}`, `Low: ${point.l}`, `Close: ${point.c}`];
+                            plugins: {
+                                legend: {
+                                    display: true,
+                                },
+                                tooltip: {
+                                    mode: 'index',
+                                    intersect: false,
+                                    callbacks: {
+                                        title: function (tooltipItems) {
+                                            const baseDt = luxon.DateTime.fromISO(selectedDateStr + 'T00:00:00Z', { zone: 'utc' })
+                                            const hours = tooltipItems[0].parsed.x
+                                            const dt = baseDt.plus({ hours: hours })
+                                            return dt.toFormat('dd.MM.yyyy, HH:mm:ss')
+                                        },
+                                        label: (context) => {
+                                            const point = context.raw
+                                            if (!point) return []
+                                            return [`High: ${point.h}`, `Low: ${point.l}`, `Zobch. množstvo: ${point.q}`]
+                                        },
                                     },
                                 },
                             },
                         },
-                    },
-                });
-            };
-
-            const updateChart = (data) => {
-                if (financialChart) {
-                    financialChart.data.datasets[0].data = data;
-                    financialChart.update('none');
-                }
-            };
-
-            const filterAndRenderChart = () => {
-                if (!selectedDateStr) return;
-
-                const startOfDay = new Date(selectedDateStr + 'T00:00:00.000Z');
-                const endOfDay = new Date(startOfDay);
-                endOfDay.setUTCDate(startOfDay.getUTCDate() + 1);
-
-                const filteredData = chartData.filter(point => {
-                    const pointDate = new Date(point.x);
-                    return pointDate >= startOfDay && pointDate < endOfDay;
-                });
-
-                updateChart(filteredData);
-            };
-
-            const formatTimeFromISO = (isoString) => {
-                if (!isoString) return '';
-                return new Date(isoString).toLocaleTimeString('sk-SK', { hour: '2-digit', minute: '2-digit' });
-            };
-
-            const updateOrderTables = () => {
-                buyOrdersTbody.innerHTML = '';
-                sellOrdersTbody.innerHTML = '';
-
-                const selectedPeriod = periods.find(p => getPeriodKey(p) === selectedPeriodKey);
-
-                if (!selectedPeriod) {
-                    const placeholder = '<tr><td colspan="3">No period selected</td></tr>';
-                    buyOrdersTbody.innerHTML = placeholder;
-                    sellOrdersTbody.innerHTML = placeholder;
-                    return;
+                    })
                 }
 
-                // Buy Orders
-                if (selectedPeriod.buyList && selectedPeriod.buyList.length > 0) {
-                    selectedPeriod.buyList
-                        .slice()
-                        .sort((a, b) => b.price - a.price)
-                        .forEach(order => {
-                            const row = `<tr><td>${order.price.toFixed(2)}</td><td>${order.quantity}</td><td>${order.ownQuantity ?? ''}</td></tr>`;
-                            buyOrdersTbody.innerHTML += row;
-                        });
-                } else {
-                    buyOrdersTbody.innerHTML = '<tr><td colspan="3">No buy orders</td></tr>';
-                }
-
-                // Sell Orders
-                if (selectedPeriod.sellList && selectedPeriod.sellList.length > 0) {
-                    selectedPeriod.sellList
-                        .slice()
-                        .sort((a, b) => a.price - b.price)
-                        .forEach(order => {
-                            const row = `<tr><td>${order.price.toFixed(2)}</td><td>${order.quantity}</td><td>${order.ownQuantity ?? ''}</td></tr>`;
-                            sellOrdersTbody.innerHTML += row;
-                        });
-                } else {
-                    sellOrdersTbody.innerHTML = '<tr><td colspan="3">No sell orders</td></tr>';
-                }
-            };
-
-            const updatePeriodSelector = () => {
-                const previouslySelected = selectedPeriodKey;
-
-                const startOfDay = new Date(selectedDateStr + 'T00:00:00.000Z');
-                const endOfDay = new Date(startOfDay);
-                endOfDay.setUTCDate(startOfDay.getUTCDate() + 1);
-
-                const availablePeriods = periods.filter(p => {
-                    const periodStartDate = new Date(p.period.start);
-                    return periodStartDate >= startOfDay && periodStartDate < endOfDay;
-                }).sort((a, b) => new Date(a.period.start) - new Date(b.period.start));
-
-                const newPeriodKeys = availablePeriods.map(p => getPeriodKey(p));
-                const currentPeriodKeys = Array.from(periodSelector.options).map(opt => opt.value);
-
-                // If the list of periods hasn't changed, just update the tables.
-                // This prevents the selector from re-rendering and closing on the user.
-                if (JSON.stringify(newPeriodKeys) === JSON.stringify(currentPeriodKeys)) {
-                    updateOrderTables();
-                    return;
-                }
-
-                // If the periods have changed, then we rebuild the selector dropdown.
-                periodSelector.innerHTML = '';
-
-                if (availablePeriods.length === 0) {
-                    periodSelector.innerHTML = '<option>No periods available for this date</option>';
-                    selectedPeriodKey = null;
-                    updateOrderTables();
-                    return;
-                }
-
-                availablePeriods.forEach(p => {
-                    const option = document.createElement('option');
-                    const key = getPeriodKey(p);
-                    option.value = key;
-                    let label = `${formatTimeFromISO(p.period.start)} - ${formatTimeFromISO(p.period.end)}`;
-                    if (p.period.isBlock) {
-                        label += ' (block)';
+                const updateChart = (data) => {
+                    if (financialChart) {
+                        financialChart.data.datasets[0].data = data
+                        financialChart.update('none')
                     }
-                    option.textContent = label;
-                    periodSelector.appendChild(option);
-                });
-
-                if (previouslySelected && availablePeriods.some(p => getPeriodKey(p) === previouslySelected)) {
-                    selectedPeriodKey = previouslySelected;
-                } else {
-                    selectedPeriodKey = getPeriodKey(availablePeriods[availablePeriods.length - 1]);
-                }
-                periodSelector.value = selectedPeriodKey;
-
-                updateOrderTables();
-            };
-
-            initializeChart();
-
-
-            /**
-             * Creates a unique key for a period.
-             * @param {PeriodData} periodData
-             * @returns {string}
-             */
-            const getPeriodKey = (periodData) => periodData.period.start;
-
-            /**
-             * Transforms raw period data into a format for a candlestick chart.
-             * @param {PeriodData} periodData The data for the current period.
-             * @param {number} index The index of the current period in the array.
-             * @param {PeriodData[]} allPeriods The array of all periods.
-             * @returns {CandlestickDataPoint|null}
-             */
-            const transformPeriodToCandlestick = (periodData, index, allPeriods) => {
-                const stats = periodData.statistics;
-                // A period needs at least a last/open price, a high, and a low to be drawn.
-                if (!stats || stats.lastPrice === null || stats.maxPrice === null || stats.minPrice === null) {
-                    return null;
                 }
 
-                const openPrice = stats.lastPrice;
-                const highPrice = stats.maxPrice;
-                const lowPrice = stats.minPrice;
+                const filterAndRenderChart = () => {
+                    if (!selectedDateStr) return
 
-                // Per request, the 'close' price is the 'lastPrice' of the *next* period.
-                const nextPeriod = allPeriods[index + 1];
-                const closePrice = (nextPeriod && nextPeriod.statistics && nextPeriod.statistics.lastPrice !== null)
-                    ? nextPeriod.statistics.lastPrice
-                    : openPrice; // Fallback for the last period in the dataset.
+                    const startOfDay = new Date(selectedDateStr + 'T00:00:00.000Z')
+                    const endOfDay = new Date(startOfDay)
+                    endOfDay.setUTCDate(startOfDay.getUTCDate() + 1)
 
-                return {
-                    x: new Date(periodData.period.start).getTime(),
-                    o: openPrice,
-                    h: highPrice,
-                    l: lowPrice,
-                    c: closePrice,
-                };
-            };
+                    const filteredData = chartData.filter(point => {
+                        const pointDate = new Date(point.x)
+                        return pointDate >= startOfDay && pointDate < endOfDay
+                    })
 
+                    const transformedData = filteredData.map(point => ({
+                        ...point,
+                        x: (point.x - startOfDay.getTime()) / (3600 * 1000)
+                    }))
 
-            // --- Data Processing Functions ---
-
-            const processNewPeriodData = (newPeriods) => {
-                periods = newPeriods;
-                chartData = newPeriods
-                    .map((period, index, arr) => transformPeriodToCandlestick(period, index, arr))
-                    .filter(point => point !== null)
-                    .sort((a, b) => a.x - b.x);
-
-                if (newPeriods.length > 0) {
-                    // Select the last period of the day as the default selection
-                    const lastPeriodKey = getPeriodKey(newPeriods[newPeriods.length - 1]);
-                    if (!selectedPeriodKey || !newPeriods.some(p => getPeriodKey(p) === lastPeriodKey)) {
-                        selectedPeriodKey = lastPeriodKey;
+                    if (financialChart) {
+                        financialChart.options.scales.x.min = 0
+                        financialChart.options.scales.x.max = 24
+                        financialChart.data.datasets[0].data = transformedData
+                        financialChart.update('none')
                     }
-                } else {
-                    selectedPeriodKey = null;
                 }
 
-                filterAndRenderChart();
-                updatePeriodSelector();
-            };
+                const formatTimeFromISO = (isoString) => {
+                    if (!isoString) return ''
+                    const dt = luxon.DateTime.fromISO(isoString, { zone: 'utc' })
+                    return dt.toFormat('HH:mm')
+                }
 
-            const processSnapshot = (payload) => {
-                console.debug('Processing snapshot:', payload);
-                processNewPeriodData(payload.data);
-            };
+                const updateOrderTables = () => {
+                    buyOrdersTbody.innerHTML = ''
+                    sellOrdersTbody.innerHTML = ''
 
-            const processDbSaved = (newPeriodsData) => {
-                console.debug('Processing db_saved event:', newPeriodsData);
-                periods = newPeriodsData; // For now, we replace all periods
+                    const selectedPeriod = periods.find(p => getPeriodKey(p) === selectedPeriodKey)
 
-                let newChartData = [...chartData];
-                let changesMade = false;
-                newPeriodsData.forEach((periodData, index, arr) => {
-                    const candleStickPoint = transformPeriodToCandlestick(periodData, index, arr);
-                    if (candleStickPoint) {
-                        const existingPointIndex = newChartData.findIndex(p => p.x === candleStickPoint.x);
-                        if (existingPointIndex !== -1) {
-                            newChartData[existingPointIndex] = candleStickPoint; // Update existing
-                        } else {
-                            newChartData.push(candleStickPoint); // Add new
+                    // Update information boxes
+                    const priceRange = document.getElementById('price-range')
+                    const totalVolume = document.getElementById('total-volume')
+                    const lastPrice = document.getElementById('last-price')
+
+                    if (selectedPeriod && selectedPeriod.statistics) {
+                        const stats = selectedPeriod.statistics
+                        priceRange.textContent = stats.minPrice !== null && stats.maxPrice !== null
+                            ? `${Number(stats.maxPrice).toFixed(2)} / ${Number(stats.minPrice).toFixed(2)} €`
+                            : '-'
+                        totalVolume.textContent = stats.totalVolume !== null
+                            ? stats.totalVolume.toString() + ' MW'
+                            : '-'
+                        lastPrice.textContent = stats.lastPrice !== null
+                            ? Number(stats.lastPrice).toFixed(2) + ' €'
+                            : '-'
+                    } else {
+                        priceRange.textContent = '-'
+                        totalVolume.textContent = '-'
+                        lastPrice.textContent = '-'
+                    }
+
+                    if (!selectedPeriod) {
+                        const placeholder = '<tr><td colspan="3">No period selected</td></tr>'
+                        buyOrdersTbody.innerHTML = placeholder
+                        sellOrdersTbody.innerHTML = placeholder
+                        return
+                    }
+
+                    // Buy Orders
+                    if (selectedPeriod.buyList && selectedPeriod.buyList.length > 0) {
+                        selectedPeriod.buyList
+                            .slice()
+                            .sort((a, b) => b.price - a.price)
+                            .forEach(order => {
+                                const row = `<tr><td>${Number(order.price).toFixed(2)}</td><td>${Number(order.quantity)}</td><td>${Number(order.ownQuantity) ?? ''}</td></tr>`
+                                buyOrdersTbody.innerHTML += row
+                            })
+                    } else {
+                        buyOrdersTbody.innerHTML = '<tr><td colspan="3">No buy orders</td></tr>'
+                    }
+
+                    // Sell Orders
+                    if (selectedPeriod.sellList && selectedPeriod.sellList.length > 0) {
+                        selectedPeriod.sellList
+                            .slice()
+                            .sort((a, b) => a.price - b.price)
+                            .forEach(order => {
+                                const row = `<tr><td>${Number(order.price).toFixed(2)}</td><td>${Number(order.quantity)}</td><td>${Number(order.ownQuantity) ?? ''}</td></tr>`
+                                sellOrdersTbody.innerHTML += row
+                            })
+                    } else {
+                        sellOrdersTbody.innerHTML = '<tr><td colspan="3">No sell orders</td></tr>'
+                    }
+                }
+
+                const updatePeriodSelector = () => {
+                    const previouslySelected = selectedPeriodKey
+
+                    const startOfDay = new Date(selectedDateStr + 'T00:00:00.000Z')
+                    const endOfDay = new Date(startOfDay)
+                    endOfDay.setUTCDate(startOfDay.getUTCDate() + 1)
+
+                    const availablePeriods = periods.filter(p => {
+                        const periodStartDate = new Date(p.period.start)
+                        return periodStartDate >= startOfDay && periodStartDate < endOfDay
+                    }).sort((a, b) => new Date(a.period.start) - new Date(b.period.start))
+
+                    const newPeriodKeys = availablePeriods.map(p => getPeriodKey(p))
+                    const currentPeriodKeys = Array.from(periodSelector.options).map(opt => opt.value)
+
+                    // If the list of periods hasn't changed, just update the tables.
+                    // This prevents the selector from re-rendering and closing on the user.
+                    if (JSON.stringify(newPeriodKeys) === JSON.stringify(currentPeriodKeys)) {
+                        updateOrderTables()
+                        return
+                    }
+
+                    // If the periods have changed, then we rebuild the selector dropdown.
+                    periodSelector.innerHTML = ''
+
+                    if (availablePeriods.length === 0) {
+                        periodSelector.innerHTML = '<option>No periods available for this date</option>'
+                        selectedPeriodKey = null
+                        updateOrderTables()
+                        return
+                    }
+
+                    availablePeriods.forEach(p => {
+                        const option = document.createElement('option')
+                        const key = getPeriodKey(p)
+                        option.value = key
+                        let label = `${formatTimeFromISO(p.period.start)} - ${formatTimeFromISO(p.period.end)}`
+                        if (p.period.isBlock) {
+                            label += ' (block)'
                         }
-                        changesMade = true;
-                    }
-                });
+                        option.textContent = label
+                        periodSelector.appendChild(option)
+                    })
 
-                if (changesMade) {
-                    chartData = newChartData.sort((a, b) => a.x - b.x);
-                }
-
-                // statusElement.textContent = `Chart updated from DB_SAVED. ${newPeriodsData.length} periods processed.`;
-                filterAndRenderChart();
-                updatePeriodSelector();
-            };
-
-            // --- Navigation ---
-            const handleNavigation = (direction) => {
-                const currentDate = new Date(selectedDateStr);
-                if (direction === 'backward') {
-                    currentDate.setUTCDate(currentDate.getUTCDate() - 1);
-                } else if (direction === 'forward') {
-                    currentDate.setUTCDate(currentDate.getUTCDate() + 1);
-                }
-                selectedDateStr = currentDate.toISOString().split('T')[0];
-                dateInput.value = selectedDateStr;
-
-                // Request historical data from the server for the new date
-                const message = {
-                    event: 'get_historical_data',
-                    data: {
-                        date: selectedDateStr,
-                    }
-                };
-                wsClient.send(message);
-                console.log(`Requesting historical data for ${selectedDateStr}...`);
-
-                // Clear existing data to give user feedback that new data is loading
-                periods = [];
-                chartData = [];
-                filterAndRenderChart(); // Renders the empty chart
-                updatePeriodSelector(); // Renders the empty selector/tables
-            };
-
-            backwardBtn.addEventListener('click', () => handleNavigation('backward'));
-            forwardBtn.addEventListener('click', () => handleNavigation('forward'));
-
-            periodSelector.addEventListener('change', (e) => {
-                selectedPeriodKey = e.target.value;
-                updateOrderTables();
-            });
-
-
-            // --- WebSocket Client Setup ---
-
-            const wsClient = new WebSocketClient();
-
-            wsClient.onMessage((message) => {
-                timestampElement.textContent = formatISODateToCustomString(message.timestamp || new Date().toISOString());
-
-                const messageType = message.type || message.event;
-                const payload = message.payload || message.data;
-
-                const todayStr = new Date().toISOString().split('T')[0];
-                const isViewingHistory = selectedDateStr < todayStr;
-
-                // Ignore real-time updates (snapshot, db_saved) when viewing a past date.
-                if (isViewingHistory && (messageType === 'snapshot' || messageType === 'snapshot_received' || messageType === 'db_saved')) {
-                    console.debug(`Ignoring real-time message '${messageType}' while viewing historical data for ${selectedDateStr}.`);
-                    return;
-                }
-
-                if (messageType === 'snapshot' || messageType === 'snapshot_received') {
-                    if (payload && Array.isArray(payload.data)) {
-                        processSnapshot(payload);
+                    if (previouslySelected && availablePeriods.some(p => getPeriodKey(p) === previouslySelected)) {
+                        selectedPeriodKey = previouslySelected
                     } else {
-                        console.error("Received snapshot with invalid data structure:", message);
-                        statusElement.textContent = "Error: Received snapshot with invalid data structure.";
+                        selectedPeriodKey = getPeriodKey(availablePeriods[availablePeriods.length - 1])
                     }
-                } else if (messageType === 'historical_data') {
-                    if (Array.isArray(payload)) {
-                        console.debug('Processing historical_data:', payload);
-                        processNewPeriodData(payload);
-                    } else {
-                        console.error("Received historical_data with invalid data structure:", message);
-                    }
-                } else if (messageType === 'db_saved') {
-                    if (Array.isArray(payload)) {
-                        processDbSaved(payload);
-                    } else {
-                        console.error("Received db_saved with invalid data structure:", message);
-                        statusElement.textContent = "Error: Received db_saved with invalid data structure.";
-                    }
-                } else {
-                    console.warn('Received unhandled message type:', messageType, message);
-                    statusElement.textContent = `Received unhandled message type: ${messageType}`;
+                    periodSelector.value = selectedPeriodKey
+
+                    updateOrderTables()
                 }
-            });
 
-            wsClient.onOpen(() => {
-                statusElement.textContent = 'connected';
-            });
+                initializeChart()
 
-            wsClient.onClose(() => {
-                statusElement.textContent = 'disconnected. Attempting to reconnect...';
-            });
-        });
-    </script>
 
-</body>
+                /**
+                 * Creates a unique key for a period.
+                 * @param {PeriodData} periodData
+                 * @returns {string}
+                 */
+                const getPeriodKey = (periodData) => periodData.period.start
+
+                /**
+                 * Transforms raw period data into a format for a candlestick chart.
+                 * @param {PeriodData} periodData The data for the current period.
+                 * @param {number} index The index of the current period in the array.
+                 * @param {PeriodData[]} allPeriods The array of all periods.
+                 * @returns {CandlestickDataPoint|null}
+                 */
+                const transformPeriodToCandlestick = (periodData, index, allPeriods) => {
+                    const stats = periodData.statistics
+                    // A period needs at least a last/open price, a high, and a low to be drawn.
+                    if (!stats || stats.lastPrice === null || stats.maxPrice === null || stats.minPrice === null) {
+                        return null
+                    }
+
+                    const openPrice = stats.lastPrice
+                    const highPrice = stats.maxPrice
+                    const lowPrice = stats.minPrice
+
+                    // Per request, the 'close' price is the 'lastPrice' of the *next* period.
+                    const nextPeriod = allPeriods[index + 1]
+                    const closePrice = (nextPeriod && nextPeriod.statistics && nextPeriod.statistics.lastPrice !== null)
+                        ? nextPeriod.statistics.lastPrice
+                        : openPrice // Fallback for the last period in the dataset.
+                    return {
+                        x: luxon.DateTime.fromISO(periodData.period.start, { zone: 'utc' }).toMillis(),
+                        o: openPrice,
+                        h: highPrice,
+                        l: lowPrice,
+                        c: closePrice,
+                        q: stats.totalVolume
+                    }
+                }
+
+
+                // --- Data Processing Functions ---
+
+                const processNewPeriodData = (newPeriods) => {
+                    periods = newPeriods
+                    chartData = newPeriods
+                        .map((period, index, arr) => transformPeriodToCandlestick(period, index, arr))
+                        .filter(point => point !== null)
+                        .sort((a, b) => a.x - b.x)
+
+                    if (newPeriods.length > 0) {
+                        // Select the last period of the day as the default selection
+                        const lastPeriodKey = getPeriodKey(newPeriods[newPeriods.length - 1])
+                        if (!selectedPeriodKey || !newPeriods.some(p => getPeriodKey(p) === lastPeriodKey)) {
+                            selectedPeriodKey = lastPeriodKey
+                        }
+                    } else {
+                        selectedPeriodKey = null
+                    }
+
+                    filterAndRenderChart()
+                    updatePeriodSelector()
+                }
+
+                function processSnapshot(payload) {
+                    console.debug('Processing snapshot:', payload)
+                    const filtered = filterPeriods(payload.data)
+
+                    filtered.forEach(newPeriod => {
+                        const key = getPeriodKey(newPeriod)
+                        const existingIndex = periods.findIndex(p => getPeriodKey(p) === key)
+                        if (existingIndex !== -1) {
+                            periods[existingIndex] = newPeriod // Update existing
+                        } else {
+                            periods.push(newPeriod) // Add new
+                        }
+                    })
+
+                    // Sort periods by start time
+                    periods.sort((a, b) => new Date(a.period.start) - new Date(b.period.start))
+
+                    // Regenerate chartData from updated periods
+                    chartData = periods
+                        .map((period, index, arr) => transformPeriodToCandlestick(period, index, arr))
+                        .filter(point => point !== null)
+                        .sort((a, b) => a.x - b.x)
+
+                    // Select the last period as default if not set or invalid
+                    if (filtered.length > 0) {
+                        const lastPeriodKey = getPeriodKey(filtered[filtered.length - 1])
+                        if (!selectedPeriodKey || !periods.some(p => getPeriodKey(p) === selectedPeriodKey)) {
+                            selectedPeriodKey = lastPeriodKey
+                        }
+                    } else {
+                        selectedPeriodKey = null
+                    }
+
+                    filterAndRenderChart()
+                    updatePeriodSelector()
+                }
+
+                function processDbSaved(newPeriodsData) {
+                    console.debug('Processing db_saved event:', newPeriodsData)
+                    const filtered = filterPeriods(newPeriodsData)
+
+                    filtered.forEach(newPeriod => {
+                        const key = getPeriodKey(newPeriod)
+                        const existingIndex = periods.findIndex(p => getPeriodKey(p) === key)
+                        if (existingIndex !== -1) {
+                            periods[existingIndex] = newPeriod // Update existing
+                        } else {
+                            periods.push(newPeriod) // Add new
+                        }
+                    })
+
+                    // Sort periods by start time
+                    periods.sort((a, b) => new Date(a.period.start) - new Date(b.period.start))
+
+                    console.log(periods)
+                    // Regenerate chartData from updated periods
+                    chartData = periods
+                        .map((period, index, arr) => transformPeriodToCandlestick(period, index, arr))
+                        .filter(point => point !== null)
+                        .sort((a, b) => a.x - b.x)
+
+                    filterAndRenderChart()
+                    updatePeriodSelector()
+                }
+
+                // --- Navigation ---
+                const handleNavigation = (direction) => {
+                    const currentDate = new Date(selectedDateStr)
+                    if (direction === 'backward') {
+                        currentDate.setUTCDate(currentDate.getUTCDate() - 1)
+                    } else if (direction === 'forward') {
+                        currentDate.setUTCDate(currentDate.getUTCDate() + 1)
+                    }
+                    selectedDateStr = currentDate.toISOString().split('T')[0]
+                    dateInput.value = selectedDateStr
+
+                    // Request historical data from the server for the new date
+                    const message = {
+                        event: 'get_historical_data',
+                        data: {
+                            date: selectedDateStr,
+                        }
+                    }
+                    wsClient.send(message)
+
+                    // Clear existing data to give user feedback that new data is loading
+                    periods = []
+                    chartData = []
+                    filterAndRenderChart() // Renders the empty chart
+                    updatePeriodSelector() // Renders the empty selector/tables
+                }
+
+                backwardBtn.addEventListener('click', () => handleNavigation('backward'))
+                forwardBtn.addEventListener('click', () => handleNavigation('forward'))
+
+                periodSelector.addEventListener('change', (e) => {
+                    selectedPeriodKey = e.target.value
+                    updateOrderTables()
+                })
+
+
+                // --- WebSocket Client Setup ---
+
+                const wsClient = new WebSocketClient()
+
+                wsClient.onMessage((message) => {
+                    timestampElement.textContent = formatISODateToCustomString(message.timestamp || new Date().toISOString())
+
+                    const messageType = message.type || message.event
+                    const payload = message.payload || message.data
+
+                    const todayStr = new Date().toISOString().split('T')[0]
+                    const isViewingHistory = selectedDateStr < todayStr
+
+                    // Ignore real-time updates (snapshot, db_saved) when viewing a past date.
+                    if (isViewingHistory && (messageType === 'snapshot' || messageType === 'snapshot_received' || messageType === 'db_saved')) {
+                        console.debug(`Ignoring real-time message '${messageType}' while viewing historical data for ${selectedDateStr}.`)
+                        return
+                    }
+
+                    if (messageType === 'snapshot' || messageType === 'snapshot_received') {
+                        if (payload && Array.isArray(payload.data)) {
+                            processSnapshot(payload)
+                        } else {
+                            console.error('Received snapshot with invalid data structure:', message)
+                            statusElement.textContent = 'Error: Received snapshot with invalid data structure.'
+                        }
+                    } else if (messageType === 'historical_data') {
+                        if (Array.isArray(payload)) {
+                            console.debug('Processing historical_data:', payload)
+                            const filtered = filterPeriods(payload)
+                            processNewPeriodData(filtered)
+                        } else {
+                            console.error('Received historical_data with invalid data structure:', message)
+                        }
+                    } else if (messageType === 'db_saved') {
+                        if (Array.isArray(payload)) {
+                            processDbSaved(payload)
+                        } else {
+                            console.error('Received db_saved with invalid data structure:', message)
+                            statusElement.textContent = 'Error: Received db_saved with invalid data structure.'
+                        }
+                    } else {
+                        console.warn('Received unhandled message type:', messageType, message)
+                        statusElement.textContent = `Received unhandled message type: ${messageType}`
+                    }
+                })
+
+                wsClient.onOpen(() => {
+                    statusElement.textContent = 'connected'
+                })
+
+                wsClient.onClose(() => {
+                    statusElement.textContent = 'disconnected. Attempting to reconnect...'
+                })
+            })
+        </script>
+    </body>
 </html>
