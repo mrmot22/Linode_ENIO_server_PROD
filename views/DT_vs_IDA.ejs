@@ -16,7 +16,7 @@
         <form action="/DT-vs-IDA" method="POST" class="navigation-form">
             <input type="hidden" name="direction" id="direction" />
             <button type="button" class="triangle-button backward" onclick="navigate('backward')"></button>
-            <input type="text" name="currentHour" id="currentHour" value="<%= currentHour %>" />
+            <input type="date" name="currentDay" id="currentDay" value="<%= currentDay %>" />
             <button type="button" class="triangle-button forward" onclick="navigate('forward')"></button>
         </form>
 
@@ -138,6 +138,19 @@
         maximalna_cena = Math.max(...kombinovany_array);
         minimalna_cena = Math.min(...kombinovany_array);
 
+        function navigate(direction) {
+            document.getElementById('direction').value = direction;
+            document.querySelector('form').submit();
+        }
+
+        dateInput = document.getElementById('currentDay');
+
+        dateInput.addEventListener('change', () => {
+            const selectedDate = dateInput.value; // e.g., "2025-01-01"
+            if (selectedDate) {
+                document.querySelector('form').submit(); // Send date to server
+            }
+        });
 
         let options = {}
 
@@ -221,11 +234,6 @@
 
         }}
 
-        function navigate(direction) {
-            document.getElementById('direction').value = direction;
-            document.querySelector('form').submit();
-        }
-    
 
         const ctx = document.getElementById('chart1').getContext('2d');
         new Chart(ctx, {

@@ -12,7 +12,6 @@ router.get('/',checkAuthenticated, async(req, res) => {
 
   let today = new Date();
 
-
   const formattedDate = today.toISOString().split('T')[0];
   let vyraz = formattedDate.replace(/-/g,'_') // Format: YYYY-MM-DD
   
@@ -35,8 +34,6 @@ router.get('/',checkAuthenticated, async(req, res) => {
     }
 
     ).sort({ qh_perioda: 1 });
-
-
 
     const processedData = QH_data.map(item => ({
 
