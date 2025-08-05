@@ -147,15 +147,12 @@
 
 
 
-        console.log(DT_cena_DE);
-
         function navigate(direction) {
             document.getElementById('direction').value = direction;
             document.querySelector('form').submit();
         }
     
         dateInput = document.getElementById('currentDay');
-
         dateInput.addEventListener('change', () => {
             const selectedDate = dateInput.value; // e.g., "2025-01-01"
             if (selectedDate) {

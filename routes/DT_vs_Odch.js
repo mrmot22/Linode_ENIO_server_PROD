@@ -73,7 +73,7 @@ router.get('/',checkAuthenticated, async(req, res) => {
 
     });
 
-    res.render('DT_vs_Odch', { currentHour: formattedDate, dataJSON: processedData});
+    res.render('DT_vs_Odch', { currentDay: formattedDate, dataJSON: processedData});
 
   } catch (err) {
     console.error('Error fetching data:', err);
@@ -87,9 +87,9 @@ router.get('/',checkAuthenticated, async(req, res) => {
 
 router.post('/',checkAuthenticated, async(req,res) => {
 
-  const { direction, currentHour } = req.body;
+  const { direction, currentDay } = req.body;
 
-  let date = new Date(currentHour);
+  let date = new Date(currentDay);
   let new_date = new Date(date);
 
   if (direction.toString() == "backward") {
@@ -138,7 +138,7 @@ router.post('/',checkAuthenticated, async(req,res) => {
 
     });
 
-    res.render('DT_vs_Odch', { currentHour: formattedDate, dataJSON: processedData});
+    res.render('DT_vs_Odch', { currentDay: formattedDate, dataJSON: processedData});
 
   } catch (err) {
     console.error('Error fetching data:', err);

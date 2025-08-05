@@ -17,7 +17,7 @@
             <input type="hidden" name="direction" id="direction" />
             <input type="hidden" name="sluzbaFinder" id="sluzbaFinder" value="<%= sluzbaFinder %>" />
             <button type="button" class="triangle-button backward" onclick="navigate('backward')"></button>
-            <input type="text" name="currentDay" id="currentDay" value="<%= currentDay %>" />
+            <input type="date" name="currentDay" id="currentDay" value="<%= currentDay %>" />
             <button type="button" class="triangle-button forward" onclick="navigate('forward')"></button>
         </form>
 
@@ -400,8 +400,16 @@
             document.getElementById('direction').value = direction;
             document.querySelector('form').submit();
         }
-    
-        console.log("Data pre graf:", char_dataset);
+
+        dateInput = document.getElementById('currentDay');
+        dateInput.addEventListener('change', () => {
+            const selectedDate = dateInput.value; // e.g., "2025-01-01"
+            if (selectedDate) {
+                document.querySelector('form').submit(); // Send date to server
+            }
+        });
+
+
 
         const ctx = document.getElementById('myChart').getContext('2d');
         new Chart(ctx, {
