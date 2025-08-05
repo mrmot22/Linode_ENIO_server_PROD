@@ -156,7 +156,7 @@ router.post('/',checkAuthenticated, async(req,res) => {
       }));
 
 
-      res.render('PICASSO_pre', { currentHour: formattedDate, dataJSON: processedData, smer: smer});
+      res.render('PICASSO_pre', { currentDay: formattedDate, dataJSON: processedData, smer: smer});
 
     } catch (err) {
       console.error('Error fetching data:', err);
