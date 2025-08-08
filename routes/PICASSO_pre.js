@@ -3,7 +3,7 @@ const router = express.Router()
 
 
 
-const QH_picasso = require('../models/4s_data'); 
+const QH_picasso_avg = require('../models/4s_data'); 
 
 
 //   - Start of the router --HOME -- 
@@ -19,9 +19,9 @@ router.get('/',checkAuthenticated, async(req, res) => {
 
   try{
 
-    const QH_data = await QH_picasso.find(
+    const QH_data = await QH_picasso_avg.find(
       {
-        qh_perioda: { $regex: `^${vyraz}` },
+        qh_perioda: { $gte: vyraz, $lt: vyraz + '\uffff' },
         Cena_SEPS_POS_avg: { $exists: true }  // This ensures the field exists
      },
     {
@@ -33,7 +33,10 @@ router.get('/',checkAuthenticated, async(req, res) => {
       Cena_SEPS_POS_min: 1
     }
 
-    ).sort({ qh_perioda: 1 });
+    ).sort({ qh_perioda: 1 })
+    .hint("qh_perioda_1_Cena_SEPS_POS_avg_1");  // Force the right index
+
+
 
     const processedData = QH_data.map(item => ({
 
@@ -87,9 +90,9 @@ router.post('/',checkAuthenticated, async(req,res) => {
 
     try{
 
-      const QH_data = await QH_picasso.find(
+      const QH_data = await QH_picasso_avg.find(
         {
-          qh_perioda: { $regex: `^${vyraz}` },
+          qh_perioda: { $gte: vyraz, $lt: vyraz + '\uffff' },
           Cena_SEPS_POS_avg: { $exists: true }  // This ensures the field exists
         },
         {
@@ -101,7 +104,8 @@ router.post('/',checkAuthenticated, async(req,res) => {
           Cena_SEPS_POS_min: 1
         }
 
-      ).sort({ qh_perioda: 1 });
+      ).sort({ qh_perioda: 1 })
+       .hint("qh_perioda_1_Cena_SEPS_POS_avg_1");  // Force the right index;
 
 
 
@@ -115,6 +119,7 @@ router.post('/',checkAuthenticated, async(req,res) => {
 
       }));
 
+
       res.render('PICASSO_pre', { currentDay: formattedDate, dataJSON: processedData, smer: smer});
 
     } catch (err) {
@@ -126,11 +131,11 @@ router.post('/',checkAuthenticated, async(req,res) => {
 
     try{
 
-      const QH_data = await QH_picasso.find(
+      const QH_data = await QH_picasso_avg.find(
 
         {
           qh_perioda: { $regex: `^${vyraz}` },
-          Cena_SEPS_NEG_avg: { $exists: true }  // This ensures the field exists
+          Cena_SEPS_POS_avg: { $exists: true }  // This ensures the field exists
         },
         {
           qh_perioda: 1, 
@@ -141,7 +146,8 @@ router.post('/',checkAuthenticated, async(req,res) => {
           Cena_SEPS_NEG_min: 1
         }
 
-      ).sort({ qh_perioda: 1 });
+      ).sort({ qh_perioda: 1 })
+        .hint("qh_perioda_1_Cena_SEPS_POS_avg_1");  // Force the right index;
 
 
 
@@ -155,6 +161,7 @@ router.post('/',checkAuthenticated, async(req,res) => {
 
       }));
 
+      
 
       res.render('PICASSO_pre', { currentDay: formattedDate, dataJSON: processedData, smer: smer});
 
