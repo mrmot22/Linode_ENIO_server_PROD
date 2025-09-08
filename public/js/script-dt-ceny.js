@@ -3,10 +3,65 @@ document.getElementById('dateForm').addEventListener('submit', function(event) {
     event.preventDefault();
 });
 
+
+// Add debounce function
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+
+let isInitialLoad = true;
+
+async function loadDataForDay(date) {
+    console.log('Requesting data for date:', date);
+    
+    // Skip initial load if we already loaded data manually
+    if (isInitialLoad && date === document.getElementById('currentDay').value) {
+        console.log('Skipping initial load - data already loaded');
+        isInitialLoad = false;
+        return;
+    }
+    
+    isInitialLoad = false;
+    
+    try {
+        const response = await fetch('/DT-ceny/data', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                currentDay: date,
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error('Server error: ' + response.status);
+        }
+        
+        const newData = await response.json();
+        console.log('Data received:', newData);
+        
+        updatePageWithData(newData);
+        
+    } catch (error) {
+        console.error('Error loading data:', error);
+    }
+}
+
+const debouncedLoadData = debounce(loadDataForDay, 300);
+
 function navigate(direction) {
     const dateInput = document.getElementById('currentDay');
     
-    // Check if date input has a valid value
     if (!dateInput.value) {
         console.error('No date selected');
         return;
@@ -14,7 +69,6 @@ function navigate(direction) {
     
     let currentDate = new Date(dateInput.value);
     
-    // Check if date is valid
     if (isNaN(currentDate.getTime())) {
         console.error('Invalid date:', dateInput.value);
         return;
@@ -30,54 +84,24 @@ function navigate(direction) {
         return;
     }
     
-    // Format date as YYYY-MM-DD
     const newDate = currentDate.toISOString().split('T')[0];
     console.log('New Date:', newDate);
     
     dateInput.value = newDate;
     
-    // Load data for the new date
-    loadDataForDay(newDate);
+    debouncedLoadData(newDate);
 }
+
+
 const dateInput = document.getElementById('currentDay');
 dateInput.addEventListener('change', () => {
     const selectedDate = dateInput.value;
     if (selectedDate) {
-        loadDataForDay(selectedDate);
+        debouncedLoadData(selectedDate);
     }
 });
 
 
-async function loadDataForDay(date) {
-
-    
-    try {
-        // Send POST request to your server endpoint
-        const response = await fetch('/DT-ceny/data', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                currentDay: date,
-                // Add other necessary data like smer if needed
-            })
-        });
-        
-        if (!response.ok) {
-            throw new Error('Server error: ' + response.status);
-        }
-        
-        const newData = await response.json();
-        console.log('Data received:', newData);
-        
-        // Update your page with the new data
-        updatePageWithData(newData);
-        
-    } catch (error) {
-        console.error('Error loading data:', error);
-    }
-}
 
  function updatePageWithData(data) {
     // Update your charts and other elements here

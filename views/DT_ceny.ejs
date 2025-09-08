@@ -141,19 +141,6 @@
 
 
 
-        function navigate(direction) {
-            document.getElementById('direction').value = direction;
-            document.querySelector('form').submit();
-        }
-    
-        dateInput = document.getElementById('currentDay');
-        dateInput.addEventListener('change', () => {
-            const selectedDate = dateInput.value; // e.g., "2025-01-01"
-            if (selectedDate) {
-                document.querySelector('form').submit(); // Send date to server
-            }
-        });
-
         // Create the chart
 
         const ctx = document.getElementById('myChart').getContext('2d');

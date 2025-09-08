@@ -81,22 +81,23 @@ router.get('/',checkAuthenticated, async(req, res) => {
 
 router.post('/data',checkAuthenticated, async(req,res) => {
 
-  const { currentDay } = req.body;
+    const { currentDay } = req.body;
+    
+    if (!currentDay) {
+        return res.status(400).json({ error: 'Date is required' });
+    }
+    
+    const targetDate = new Date(currentDay);
 
-  const today = new Date();
-  let new_date;
+    if (isNaN(targetDate.getTime())) {
+        return res.status(400).json({ error: 'Invalid date' });
+    }
+    
 
-  console.log('Received currentDay:', currentDay);
-
-  if (!currentDay) {
-        new_date = new Date(today);
-  } else {
-        date = new Date(currentDay);
-        new_date = new Date(date);
-  }
-
-  const formattedDate = new_date.toISOString().split('T')[0];
+  const formattedDate = targetDate.toISOString().split('T')[0];
   let nieco = formattedDate.replace(/-/g,'_') // Format: YYYY-MM-DD
+
+  //console.log('Using formattedDate:', formattedDate);
 
   try {
 
