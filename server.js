@@ -47,7 +47,7 @@ mongoose.connect(mongoURI, { })
 app.get('/', checkAuthenticated, async (req, res) => {
 
 
-  res.redirect('/DT-region');
+  res.redirect('/DT-ceny');
 
 
 })  
@@ -72,7 +72,7 @@ const PICASSO_pre_Router = require('./routes/PICASSO_pre')
 const PICASSO_4s_Router = require('./routes/PICASSO_4s')
 const PICASSO_LMOL_Router = require('./routes/PICASSO_lmol')
 const PICASSO_UNIT_Router = require('./routes/PICASSO_unit')
-const DT_region_Router = require('./routes/DT_region')
+const DT_ceny_Router = require('./routes/DT_ceny')
 const RE_aktivovana_Router = require('./routes/SEPS_RE_aktiv')
 const PpS_disponibilita_Router = require('./routes/SEPS_PpS_dispo')
 const market_orderbook_Router = require('./routes/market-orderbook')
@@ -86,10 +86,10 @@ app.use('/PI-prehlad', PICASSO_pre_Router)
 app.use('/PI-4s', PICASSO_4s_Router)
 app.use('/PI-LMOL', PICASSO_LMOL_Router)
 app.use('/PI-UNIT', PICASSO_UNIT_Router)
-app.use('/DT-region', DT_region_Router)
 app.use('/RE-SEPS', RE_aktivovana_Router)
 app.use('/PpS-SEPS', PpS_disponibilita_Router)
 app.use('/market-orderbook', market_orderbook_Router)
+app.use('/DT-ceny', DT_ceny_Router)
 
 // Start the server
 app.listen(port, () => {

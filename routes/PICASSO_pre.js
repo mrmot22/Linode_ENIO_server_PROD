@@ -105,7 +105,7 @@ router.post('/',checkAuthenticated, async(req,res) => {
         }
 
       ).sort({ qh_perioda: 1 })
-       .hint("qh_perioda_1_Cena_SEPS_POS_avg_1");  // Force the right index;
+       .hint("qh_perioda_1_Cena_SEPS_POS_avg_1"); // Force the right index;
 
 
 

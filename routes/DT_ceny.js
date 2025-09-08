@@ -68,7 +68,7 @@ router.get('/',checkAuthenticated, async(req, res) => {
     
     }));
 
-    res.render('DT_region', { currentDay: formattedDate, dataJSON: processedData }); // Render index.ejs and pass the data
+    res.render('DT_ceny', { currentDay: formattedDate, dataJSON: processedData }); // Render index.ejs and pass the data
 
   } catch (err) {
     console.error('Error fetching data:', err);
@@ -79,25 +79,21 @@ router.get('/',checkAuthenticated, async(req, res) => {
 })  
 
 
-router.post('/',checkAuthenticated, async(req,res) => {
+router.post('/data',checkAuthenticated, async(req,res) => {
 
-  const { direction, currentDay } = req.body;
+  const { currentDay } = req.body;
 
-  let date = new Date(currentDay);
-  let new_date = new Date(date);
+  const today = new Date();
+  let new_date;
 
-    if (direction.toString() == "backward") {
+  console.log('Received currentDay:', currentDay);
 
-      new_date.setDate(date.getDate() -1);
-
-    } else if  (direction.toString() == "forward")  {
-
-      new_date.setDate(date.getDate() + 1);
-
-    } else {
-
-      new_date.setDate(date.getDate() + 0);
-    }
+  if (!currentDay) {
+        new_date = new Date(today);
+  } else {
+        date = new Date(currentDay);
+        new_date = new Date(date);
+  }
 
   const formattedDate = new_date.toISOString().split('T')[0];
   let nieco = formattedDate.replace(/-/g,'_') // Format: YYYY-MM-DD
@@ -131,7 +127,8 @@ router.post('/',checkAuthenticated, async(req,res) => {
       utc_cas: formatUTCToCET(item.utc_cas) ?? null // Ensure a default value
     }));
 
-    res.render('DT_region', { currentDay: formattedDate, dataJSON: processedData }); // Render index.ejs and pass the data
+    res.json({  currentDay: formattedDate,
+                dataJSON: processedData }); // Render index.ejs and pass the data
 
   } catch (err) {
 

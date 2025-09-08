@@ -6,20 +6,18 @@
     <title>Enio | Vyhodnotenie DT</title>
     <link href="/css/style.css" rel="stylesheet" type="text/css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 </head>
 <body>
     <div class="header">
         <div class="logo">
             <img src="/img/Enio_wordmark_black_background.jpg" alt="Logo" style="height: 50px; width: auto;">
         </div>
-        <form action="/DT-region" method="POST" class="navigation-form">
+        <form id="dateForm" class="navigation-form">
             <input type="hidden" name="direction" id="direction" />
             <button type="button" class="triangle-button backward" onclick="navigate('backward')"></button>
             <input type="date" name="currentDay" id="currentDay" value="<%= currentDay %>" />
             <button type="button" class="triangle-button forward" onclick="navigate('forward')"></button>
         </form>
-
     </div>
     <div class="navigate-line">
         <div id="home-icon" onclick="toggleNav()">
@@ -30,13 +28,11 @@
 
     <%- include('../partials/navigator') %>
 
-    </div>
-
     <div class="container">
         <div class="left">
-            <canvas id="myChart"></canvas>
+             <canvas id="myChart"></canvas>
         </div>
-        <div class="right">
+                <div class="right">
             <h3>Prehľad cien na dennom trhu</h3>
             <table>
                 <thead>
@@ -50,8 +46,8 @@
                         <th>Cena PL</th>
                     </tr>
                 </thead>
-                <tbody>
-                    
+                <tbody id="table-body">
+
                     <% dataJSON.forEach(function(item) { %>
                         <tr>
                             <td class="timestamp"><%= item.perioda %></td>
@@ -112,27 +108,25 @@
         </div>
     </div>
 
-    <script>
+     <script>
 
         function formatTimeRange(timeStr) {
             
             
             if (!timeStr || !/^\d{2}:\d{2}$/.test(timeStr)) return timeStr;
-    
+            
             // Extract the hour part
             const hour = parseInt(timeStr.split(':')[0]);
-            
+                    
             // Calculate next hour (handling 23 -> 24 case)
             const nextHour = hour === 23 ? 24 : hour + 1;
-            
-            // Format both hours with leading zeros
+                    
+                    // Format both hours with leading zeros
             const currentHourFormatted = String(hour).padStart(2, '0') + ':00';
             const nextHourFormatted = String(nextHour).padStart(2, '0') + ':00';
-    
+            
             return `${currentHourFormatted} - ${nextHourFormatted}`;
         }
-
-
 
         let dataGraf_obj = ' <%-JSON.stringify(dataJSON) %> ';
         let dataGraf = JSON.parse(dataGraf_obj);
@@ -163,7 +157,7 @@
         // Create the chart
 
         const ctx = document.getElementById('myChart').getContext('2d');
-        new Chart(ctx, {
+        window.myChart = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: labels  ,
@@ -218,7 +212,6 @@
 
     </script>
 
-<script src="js/script.js"></script>
-
+    <script src="js/script-dt-ceny.js"></script>
 </body>
 </html>
