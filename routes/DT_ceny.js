@@ -41,7 +41,7 @@ router.get('/',checkAuthenticated, async(req, res) => {
   try {
 
 
-    let query = { oh_perioda: {$regex: `^${nieco}`} }; // Filter condition
+    let query = { oh_perioda: {$gte: nieco, $lt: nieco + '\uffff' }}; // Filter condition
 
     const OKTE_data = await DT_OKTE_ceny.find(query,
 

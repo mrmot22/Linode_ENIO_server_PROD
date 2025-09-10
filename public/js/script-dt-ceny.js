@@ -48,7 +48,7 @@ async function loadDataForDay(date) {
         }
         
         const newData = await response.json();
-        console.log('Data received:', newData);
+      //  console.log('Data received:', newData);
         
         updatePageWithData(newData);
         

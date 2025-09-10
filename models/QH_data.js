@@ -1,5 +1,16 @@
 const mongoose = require('mongoose');
 
+const vdt_data_Schema = new mongoose.Schema({
+   
+    OKTE_VDT_price_wavg: Number,
+    OKTE_VDT_predaj_obj: Number,
+    OKTE_VDT_nakup_obj: Number,
+    OKTE_VDT_price_min: Number,
+    OKTE_VDT_price_max: Number,
+
+
+});
+
 const QH_OKTE_Schema = new mongoose.Schema({
     qh_perioda: String,       // Format: 2025-01-01-01
     qh_num: Number,
@@ -31,6 +42,10 @@ const QH_OKTE_Schema = new mongoose.Schema({
     mFRRP_SA_RE_akt: Number,
     cena_odch: Number,
     sys_odch: Number,
+    vdt_data: {
+            type: vdt_data_Schema,
+            default: {}
+    },
     utc_cas: Date
 });
 
