@@ -25,7 +25,7 @@
         <div id="home-icon" onclick="toggleNav()">
             <img src="/img/Enio-home-icon-small.png" alt="home" style="height: 20px; width: auto;">
         </div>
-        <div class="home-text">Výsledky VDT - 60 minút</div>
+        <div class="home-text">Výsledky VDT - 15 minút</div>
     </div>
 
     <%- include('../partials/navigator') %>
@@ -42,16 +42,16 @@
             </div>
         </div>
         <div class="right">
-            <h3>Prehľad ceny DT vs ceny VDT-60</h3>
+            <h3>Prehľad ceny VDT15 vs ceny IDA</h3>
             <table>
                 <thead>
                     <tr>
                         <th>Perioda</th>
                         <th>Čas</th>
                         <th>Cena DT</th>
-                        <th>Cena VDT min.</th>
-                        <th>Cena VDT max.</th>
-                        <th>Cena VDT avg.</th>
+                        <th>Cena VDT-15 min.</th>
+                        <th>Cena VDT-15 max.</th>
+                        <th>Cena VDT-15 avg.</th>
 
                     </tr>
                 </thead>
@@ -63,8 +63,8 @@
                             <td class="timestamp"><%= item.utc_cas %></td>
 
                             <td>
-                                <% if (item.cena_SK !== null && item.cena_SK !== undefined) { %>
-                                    <%= item.cena_SK.toFixed(2) %>
+                                <% if (item.DT_SK_cena !== null && item.DT_SK_cena !== undefined) { %>
+                                    <%= item.DT_SK_cena.toFixed(2) %>
                                 <% } else { %>
                                     N/A
                                 <% } %>
@@ -72,8 +72,8 @@
                             </td>
 
                             <td>
-                                <% if (item.cena_VDT60_min !== null && item.cena_VDT60_min !== undefined) { %>
-                                    <%= item.cena_VDT60_min.toFixed(2) %>
+                                <% if (item.vdt_15_min !== null && item.vdt_15_min !== undefined) { %>
+                                    <%= item.vdt_15_min.toFixed(2) %>
                                 <% } else { %>
                                     N/A
                                 <% } %>
@@ -81,8 +81,8 @@
                             </td>
 
                             <td>
-                                <% if (item.cena_VDT60_max  !== null && item.cena_VDT60_max !== undefined) { %>
-                                    <%= item.cena_VDT60_max.toFixed(2) %>
+                                <% if (item.vdt_15_max  !== null && item.vdt_15_max !== undefined) { %>
+                                    <%= item.vdt_15_max.toFixed(2) %>
                                 <% } else { %>
                                     N/A
                                 <% } %>
@@ -91,8 +91,8 @@
 
                             
                             <td>
-                                <% if (item.cena_VDT60_avg !== null && item.cena_VDT60_avg !== undefined) { %>
-                                    <%= item.cena_VDT60_avg.toFixed(2) %>
+                                <% if (item.vdt_15_avg !== null && item.vdt_15_avg !== undefined) { %>
+                                    <%= item.vdt_15_avg.toFixed(2) %>
                                 <% } else { %>
                                     N/A
                                 <% } %>
@@ -113,13 +113,17 @@
         let dataGraf = JSON.parse(dataGraf_obj);
 
         const labels = dataGraf.map(item => item.perioda);
-        const DT_SK_cena = dataGraf.map(item => item.cena_SK|| null);
-        const VDT60_cena_min = dataGraf.map(item => item.cena_VDT60_min ?? null);
-        const VDT60_cena_max = dataGraf.map(item => item.cena_VDT60_max ?? null);
-        const VDT60_cena_avg = dataGraf.map(item => item.cena_VDT60_avg ?? null);
-        const VDT15_cena_avg = dataGraf.map(item => item.cena_VDT15_avg ?? null);
-        const objem_VDT_nakup = dataGraf.map(item => item.objem_VDT_nakup ?? null);
-        const objem_VDT_predaj = dataGraf.map(item => item.objem_VDT_predaj * -1 ?? null);
+        const DT_SK_cena = dataGraf.map(item => item.DT_SK_cena|| null);
+        const VDT15_cena_min = dataGraf.map(item => item.vdt_15_min ?? null);
+        const VDT15_cena_max = dataGraf.map(item => item.vdt_15_max ?? null);
+        const VDT15_cena_avg = dataGraf.map(item => item.vdt_15_avg ?? null);
+        const VDT60_cena_avg = dataGraf.map(item => item.vdt_60_avg ?? null);
+        const IDA1_cena = dataGraf.map(item => item.IDA1_cena ?? null);
+        const IDA2_cena = dataGraf.map(item => item.IDA2_cena ?? null);
+        const IDA3_cena = dataGraf.map(item => item.IDA3_cena ?? null);
+        const DE15_cena = dataGraf.map(item => item.DT_cena_DE15 ?? null); 
+        const objem_VDT_nakup = dataGraf.map(item => item.vdt_15_nakup ?? null);
+        const objem_VDT_predaj = dataGraf.map(item => item.vdt_15_predaj * -1 ?? null);
 
         // Create the chart
 
@@ -131,18 +135,21 @@
                 datasets: [
                     
                  {
-                    label: 'Cena VTD60 avg',
-                    data: VDT60_cena_avg,
+                    label: 'Cena VTD-15 avg',
+                    data: VDT15_cena_avg,
                     backgroundColor: 'green',
                     borderColor: 'green',
                     borderWidth: 2
-                },                 {
-                    label: 'Cena VTD15 avg',
-                    data: VDT15_cena_avg,
+                }, 
+                {
+                    label: 'Cena VTD-60 avg',
+                    data: VDT60_cena_avg,
                     backgroundColor: 'red',
                     borderColor: 'red',
-                    borderWidth: 2
-                },                {
+                    borderWidth: 1,
+                    pointRadius: 1
+                }, 
+                {
                     label: 'Cena DT',
                     data: DT_SK_cena,
                     type: 'line',
@@ -154,8 +161,44 @@
                     pointRadius: 1
                 },
                 {
-                    label: 'Cena VDT min',
-                    data: VDT60_cena_min,
+                    label: 'Cena IDA1',
+                    data: IDA1_cena,
+                    backgroundColor: 'rgba(255, 138, 138, 0.6)',  
+                    borderColor: 'rgba(255, 138, 138, 0.8)',
+                    borderWidth: 1,
+                    pointRadius: 1,
+                    hidden: true
+                },
+                {
+                    label: 'Cena IDA2',
+                    data: IDA2_cena,
+                    backgroundColor: 'rgba(148, 148, 255, 0.6)',  
+                    borderColor: 'rgba(148, 148, 255, 0.8)',
+                    borderWidth: 1,
+                    pointRadius: 1,
+                    hidden: true
+                },
+                {
+                    label: 'Cena IDA3',
+                    data: IDA3_cena,
+                    backgroundColor: 'rgba(101, 198, 187, 0.6)',  
+                    borderColor: 'rgba(101, 198, 187, 0.8)',
+                    borderWidth: 1,
+                    pointRadius: 1,
+                    hidden: true
+                },
+                {
+                    label: 'Cena DE-15',
+                    data: DE15_cena,
+                    backgroundColor: 'grey',  
+                    borderColor: 'grey',
+                    borderWidth: 1,
+                    pointRadius: 1,
+                    hidden: true
+                },
+                {
+                    label: 'Cena VDT-15 min',
+                    data: VDT15_cena_min,
                     type: 'line',
                     backgroundColor:  'rgba(127, 183, 127, 0.3)',
                     borderColor: 'rgba(127, 183, 127, 0.4)',
@@ -163,8 +206,8 @@
                 
                 },
                 {
-                    label: 'Cena VDT max',
-                    data: VDT60_cena_max,
+                    label: 'Cena VDT-15 max',
+                    data: VDT15_cena_max,
                     backgroundColor: 'rgba(127, 183, 127, 0.3)',
                     borderColor: 'rgba(127, 183, 127, 0.4)',
                     borderWidth: 1,
@@ -243,7 +286,7 @@
 
     </script>
 
-<script src="js/script-vdt-60.js"></script>          <!--script, ktorý je zodpovedný pre navigátora-->
+<script src="js/script-vdt-15.js"></script>          <!--script, ktorý je zodpovedný pre navigátora-->
 
 </body>
 </html>
