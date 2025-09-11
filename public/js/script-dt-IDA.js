@@ -82,7 +82,7 @@ async function loadDataForDay(date) {
     isInitialLoad = false;
     
     try {
-        const response = await fetch('/VDT-15/data', {
+        const response = await fetch('/DT-vs-IDA/data', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -150,9 +150,10 @@ function updateTablebody(data) {
             <td class="timestamp">${item.perioda}</td>
             <td class="timestamp">${item.utc_cas}</td>
             <td>${item.DT_SK_cena  !== null && item.DT_SK_cena  !== undefined ? item.DT_SK_cena.toFixed(2) : 'N/A'}</td>
-            <td>${item.vdt_15_min !== null && item.vdt_15_min !== undefined ? item.vdt_15_min.toFixed(2) : 'N/A'}</td>
-            <td>${item.vdt_15_max !== null && item.vdt_15_max !== undefined ? item.vdt_15_max.toFixed(2) : 'N/A'}</td>
-            <td>${item.vdt_15_avg !== null && item.vdt_15_avg !== undefined ? item.vdt_15_avg.toFixed(2) : 'N/A'}</td>
+            <td>${item.DT_cena_DE15 !== null && item.DT_cena_DE15 !== undefined ? item.DT_cena_DE15.toFixed(2) : 'N/A'}</td>
+            <td>${item.IDA1_cena !== null && item.IDA1_cena !== undefined ? item.IDA1_cena.toFixed(2) : 'N/A'}</td>
+            <td>${item.IDA2_cena !== null && item.IDA2_cena !== undefined ? item.IDA2_cena.toFixed(2) : 'N/A'}</td>
+            <td>${item.IDA3_cena !== null && item.IDA3_cena !== undefined ? item.IDA3_cena.toFixed(2) : 'N/A'}</td>
         `;
         tableBody.appendChild(row);
     });
@@ -162,32 +163,35 @@ function updateCharts(data) {
 
     if (window.myChart1) {
 
+
         window.myChart1.data.labels = data.map(item => item.perioda);
-        window.myChart1.data.datasets[0].data = data.map(item => item.vdt_15_avg ?? null);
-        window.myChart1.data.datasets[1].data = data.map(item => item.vdt_60_avg  ?? null);
-        window.myChart1.data.datasets[2].data = data.map(item => item.DT_SK_cena ?? null);
-        window.myChart1.data.datasets[3].data = data.map(item => item.IDA1_cena ?? null);
-        window.myChart1.data.datasets[4].data = data.map(item => item.IDA2_cena ?? null);
-        window.myChart1.data.datasets[5].data = data.map(item => item.IDA3_cena ?? null);
-        window.myChart1.data.datasets[6].data = data.map(item => item.DT_cena_DE15 ?? null);
-        window.myChart1.data.datasets[7].data = data.map(item => item.vdt_15_min ?? null);
-        window.myChart1.data.datasets[8].data = data.map(item => item.vdt_15_max ?? null);
+        window.myChart1.data.datasets[0].data = data.map(item => item.IDA1_cena ?? null);
+        window.myChart1.data.datasets[1].data = data.map(item => item.IDA2_cena  ?? null);
+        window.myChart1.data.datasets[2].data = data.map(item => item.IDA3_cena ?? null);
+        window.myChart1.data.datasets[3].data = data.map(item => item.DT_cena_DE15 ?? null);
+        window.myChart1.data.datasets[4].data = data.map(item => item.DT_SK_cena ?? null);
 
         const { maximalna_cena, minimalna_cena } = vypocitajOsy(data);
 
         window.myChart1.options.scales.y.max = maximalna_cena;
         window.myChart1.options.scales.y.min = minimalna_cena;
+
         window.myChart1.update();
 
-        }
+    }
     
     if (window.myChart2) {
         window.myChart2.data.labels = data.map(item => item.perioda);
-        window.myChart2.data.datasets[0].data = data.map(item => item.vdt_15_nakup ?? null);
-        window.myChart2.data.datasets[1].data = data.map(item => item.vdt_15_predaj * -1 ?? null);
+        window.myChart2.data.datasets[0].data = data.map(item => item.IDA1_nakup ?? null);
+        window.myChart2.data.datasets[1].data = data.map(item => item.IDA1_predaj * -1 ?? null);
+        window.myChart2.data.datasets[2].data = data.map(item => item.IDA2_nakup ?? null);
+        window.myChart2.data.datasets[3].data = data.map(item => item.IDA2_predaj * -1 ?? null);
+        window.myChart2.data.datasets[4].data = data.map(item => item.IDA3_nakup ?? null);
+        window.myChart2.data.datasets[5].data = data.map(item => item.IDA3_predaj * -1 ?? null);
         window.myChart2.update();
     
-    }};
+    }
+};
 
 
 function vypocitajOsy(data) {
@@ -196,8 +200,6 @@ function vypocitajOsy(data) {
     const IDA2_cena = data.map(item => item.IDA2_cena ?? null);
     const IDA3_cena = data.map(item => item.IDA3_cena ?? null);
     const DE_cena = data.map(item => item.DT_cena_DE15 ?? null);
-    const vdt_15_max  = data.map(item => item.vdt_15_max ?? null);
-    const vdt_15_min  = data.map(item => item.vdt_15_min ?? null);  
 
     let kombinovany_array = [...IDA1_cena, ...IDA2_cena, ...IDA3_cena, ...DE_cena];
     maximalna_cena = Math.max(...kombinovany_array);
@@ -205,35 +207,18 @@ function vypocitajOsy(data) {
 
 
     if (maximalna_cena > 500) {
-
         maximalna_cena = 500;
-
     } else {
-
         maximalna_cena = Math.ceil(maximalna_cena / 100) * 100; // Round up to nearest 100
     }
 
-
     if (minimalna_cena < -500) {
 
-         minimalna_cena = -500;
-
+        minimalna_cena = -500;
     } else {
-
         minimalna_cena = Math.floor(minimalna_cena / 100) * 100; // Round down to nearest 100
     }
 
-    if (maximalna_cena < Math.ceil(Math.max(...vdt_15_max) / 100) * 100) {
-
-        maximalna_cena = Math.ceil(Math.max(...vdt_15_max) / 100) * 100; // Round up to nearest 100
-
-    }
-
-    if (minimalna_cena > Math.floor(Math.min(...vdt_15_min) / 100) * 100) {
-
-        minimalna_cena = Math.floor(Math.min(...vdt_15_min) / 100) * 100; // Round down to nearest 100  
-
-    }
 
     return {maximalna_cena, minimalna_cena}
     

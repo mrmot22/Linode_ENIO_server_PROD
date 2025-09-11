@@ -105,28 +105,16 @@ router.get('/',checkAuthenticated, async(req, res) => {
 })
 
 
-router.post('/',checkAuthenticated, async(req,res) => {
+router.post('/data',checkAuthenticated, async(req,res) => {
 
-  const { direction, currentDay } = req.body;
+  const { currentDay } = req.body;
 
-  let date = new Date(currentDay);
-  let new_date = new Date(date);
-
-  if (direction.toString() == "backward") {
-
-    new_date.setDate(date.getDate() -1);
-
-  } else if  (direction.toString() == "forward")  {
-
-    new_date.setDate(date.getDate() + 1);
-
-  } else {
-
-    new_date.setDate(date.getDate() + 0);
-  }
+  let new_date = new Date(currentDay);
 
   const formattedDate = new_date.toISOString().split('T')[0];
   let vyraz = formattedDate.replace(/-/g,'_') // Format: YYYY-MM-DD
+
+  delete new_date, formattedDate;
 
   try{
 
@@ -160,7 +148,6 @@ router.post('/',checkAuthenticated, async(req,res) => {
       const oh_key = qh.qh_perioda.slice(0,-3);   // Removes the last "-XX" qh part
       const matchingDT = DT_data.find(dt => dt.oh_perioda === oh_key);  // Find the matching DT_data entry
 
-
       return{
 
         perioda: qh.qh_num,
@@ -180,8 +167,11 @@ router.post('/',checkAuthenticated, async(req,res) => {
 
     });
 
+    console.log('Processed Data:', processedData);
 
-    res.render('DT_vs_IDA', { currentDay: formattedDate, dataJSON: processedData});
+
+    res.json({  currentDay: formattedDate,
+                dataJSON: processedData }); // Render index.ejs and pass the data
 
   } catch (err) {
     console.error('Error fetching data:', err);

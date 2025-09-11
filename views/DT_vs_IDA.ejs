@@ -14,7 +14,7 @@
         <div class="logo">
             <img src="/img/Enio_wordmark_black_background.jpg" alt="Logo" style="height: 50px; width: auto;">
         </div>
-        <form action="/DT-vs-IDA" method="POST" class="navigation-form">
+        <form id="dateForm" class="navigation-form">
             <input type="hidden" name="direction" id="direction" />
             <button type="button" class="triangle-button backward" onclick="navigate('backward')"></button>
             <input type="date" name="currentDay" id="currentDay" value="<%= currentDay %>" />
@@ -56,13 +56,12 @@
                         <th>Cena IDA3</th>
                     </tr>
                 </thead>
-                <tbody>
+                 <tbody id="table-body">
                     
                     <% dataJSON.forEach(function(item) { %>
                         <tr>
                             <td class="timestamp"><%= item.perioda %></td>
                             <td class="timestamp"><%= item.utc_cas %></td>
-
                             <td>
                                 <% if (item.DT_SK_cena !== null && item.DT_SK_cena !== undefined) { %>
                                     <%= item.DT_SK_cena.toFixed(2) %>
@@ -71,7 +70,6 @@
                                 <% } %>
 
                             </td>
-
                             <td>
                                 <% if (item.DT_cena_DE15 !== null && item.DT_cena_DE15 !== undefined) { %>
                                     <%= item.DT_cena_DE15.toFixed(2) %>
@@ -80,7 +78,6 @@
                                 <% } %>
 
                             </td>
-
                             <td>
                                 <% if (item.IDA1_cena !== null && item.IDA1_cena !== undefined) { %>
                                     <%= item.IDA1_cena.toFixed(2) %>
@@ -88,9 +85,7 @@
                                     N/A
                                 <% } %>
 
-                            </td>
-
-                            
+                            </td>                        
                             <td>
                                 <% if (item.IDA2_cena !== null && item.IDA2_cena !== undefined) { %>
                                     <%= item.IDA2_cena.toFixed(2) %>
@@ -99,16 +94,13 @@
                                 <% } %>
 
                             </td>
-
                             <td>
                                 <% if (item.IDA3_cena !== null && item.IDA3_cena !== undefined) { %>
                                     <%= item.IDA3_cena.toFixed(2) %>
                                 <% } else { %>
                                     N/A
                                 <% } %>
-
                             </td>
-
                         </tr>
                     <% }); %>
 
@@ -139,105 +131,9 @@
         maximalna_cena = Math.max(...kombinovany_array);
         minimalna_cena = Math.min(...kombinovany_array);
 
-        function navigate(direction) {
-            document.getElementById('direction').value = direction;
-            document.querySelector('form').submit();
-        }
-
-        dateInput = document.getElementById('currentDay');
-
-        dateInput.addEventListener('change', () => {
-            const selectedDate = dateInput.value; // e.g., "2025-01-01"
-            if (selectedDate) {
-                document.querySelector('form').submit(); // Send date to server
-            }
-        });
-
-        let options = {}
-
-        if ((maximalna_cena > 500) && (minimalna_cena > -500 )) {
-
-            options = {
-                interaction: {
-                    intersect: true,
-                    mode: 'index'},
-
-                scales: {
-                    y: {
-                        max: 500
-                    }},
-                responsive: true,
-                maintainAspectRatio: false
-            }
-
-        } else if ((maximalna_cena < 500) && (minimalna_cena < -500 )) {
-            
-            options = {
-                interaction: {
-                    intersect: true,
-                    mode: 'index'},
-
-                scales: {
-                    y: {
-                        min: -500
-                    }},
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    title: {
-                        display: true,
-                        text: 'Prehľad cien ',
-                        font: { size: 14 }
-                    }
-                }
-            }
-            
-        } else if  ((maximalna_cena > 500) && (minimalna_cena < -500 ))  {
-
-
-            options = {
-                interaction: {
-                    intersect: true,
-                    mode: 'index'},
-
-                scales: {
-                    y: {
-                        min: -500,
-                        max: 500
-                    }},
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    title: {
-                        display: true,
-                        text: 'Prehľad cien ',
-                        font: { size: 14 }
-                    }
-                }
-            }
-
-        } else {
-
-
-            options = {
-                interaction: {
-                    intersect: true,
-                    mode: 'index'},
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    title: {
-                        display: true,
-                        text: 'Prehľad cien ',
-                        font: { size: 14 }
-                    }
-                }
-
-        }}
-
 
         const ctx = document.getElementById('chart1').getContext('2d');
-        new Chart(ctx, {
+        window.myChart1 = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: labels,
@@ -282,17 +178,33 @@
                     borderColor: 'rgba(191, 191, 191, 0.6)',
                     borderWidth: 2,
                     pointRadius: 1,
-                
                 }
-  
-
             ]},
-            options: options,
+            options: {
+                interaction: {
+                    intersect: true,
+                    mode: 'index'},
+
+                scales: {
+                    y: {
+                        min: minimalna_cena < -500 ? Math.floor(minimalna_cena / 100) * 100 : null,
+                        max: maximalna_cena > 500 ? Math.ceil(maximalna_cena / 100) * 100 : null,
+                    }},
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Prehľad cien ',
+                        font: { size: 14 }
+                    }
+                }
+            },
         });
 
 
         const ctx1 = document.getElementById('chart2').getContext('2d');
-        new Chart(ctx1, {
+        window.myChart2 = new Chart(ctx1, {
             type: 'bar',
             data: {
                 labels: labels,
@@ -346,9 +258,6 @@
                     borderWidth: 2
                 }
 
-                
-
-
             ]},
             options: {
                 interaction: {
@@ -376,7 +285,7 @@
 
     </script>
 
-<script src="js/script.js"></script>          <!--script, ktorý je zodpovedný pre navigátora-->
+<script src="js/script-dt-IDA.js"></script>          <!--script, ktorý je zodpovedný pre navigátora-->
 
 </body>
 </html>
