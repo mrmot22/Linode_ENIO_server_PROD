@@ -71,7 +71,7 @@
 
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="table-body">
                     
                     <% dataJSON.forEach(function(item) { %>
                         <tr>
@@ -139,11 +139,8 @@
         const Cena_max = dataGraf.map(item => item.cena_max|| null);
         const Cena_avg = dataGraf.map(item => item.cena_avg || null);
 
-
-    
-
         const ctx = document.getElementById('myChart').getContext('2d');
-        new Chart(ctx, {
+        window.myChart = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: labels,

@@ -105,7 +105,6 @@ router.post('/data',checkAuthenticated, async(req,res) => {
 
       }));
     
-    console.log('Processed Data:', processedData);
     res.json( { dataJSON: processedData, smer: smer});
 
     } catch (err) {
@@ -147,7 +146,6 @@ router.post('/data',checkAuthenticated, async(req,res) => {
 
       }));
 
-      console.log('Processed Data:', processedData);
 
     res.json( { dataJSON: processedData, smer: smer});
 

@@ -122,3 +122,46 @@ async function loadDataForDay(date, smer) {
         console.error('Error loading data:', error);
     }
 }
+
+function updatePageWithData(data) {
+    // Update your charts and other elements here
+    if (data.dataJSON ) {
+        updateTablebody(data.dataJSON);
+        updateChart(data.dataJSON);
+    }
+
+    if (data.currentDay) {
+        document.getElementById('currentDay').value = data.currentDay;
+     }
+}
+
+function updateTablebody(data) {
+    const tableBody = document.getElementById('table-body');
+    tableBody.innerHTML = ''; // Clear existing rows
+    data.forEach(item => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td class="timestamp">${item.qh_num}</td>
+            <td class="timestamp">${item.perioda}</td>
+            <td>${item.cena_min !== null && item.cena_min !== undefined ? item.cena_min.toFixed(2) : 'N/A'}</td>
+            <td>${item.cena_max !== null && item.cena_max !== undefined ? item.cena_max.toFixed(2) : 'N/A'}</td>
+            <td>${item.cena_avg !== null && item.cena_avg !== undefined ? item.cena_avg.toFixed(2) : 'N/A'}</td>
+        `;
+        tableBody.appendChild(row);
+    });
+}
+
+function updateChart(data) {
+
+        if (window.myChart) {
+
+            window.myChart.data.labels = data.map(item => item.perioda);
+            window.myChart.data.datasets[0].data = data.map(item => item.cena_min ?? null);
+            window.myChart.data.datasets[1].data = data.map(item => item.cena_max ?? null);
+            window.myChart.data.datasets[2].data = data.map(item => item.cena_avg ?? null);
+
+            window.myChart.update();
+
+        }
+
+    }
