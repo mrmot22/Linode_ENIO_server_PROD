@@ -14,8 +14,7 @@
         <div class="logo">
             <img src="/img/Enio_wordmark_black_background.jpg" alt="Logo" style="height: 50px; width: auto;">
         </div>
-        <form action="/PI-prehlad" method="POST" class="navigation-form">
-            <input type="hidden" name="direction" id="direction" />
+        <form id="dateForm" class="navigation-form">
             <input type="hidden" name="smer" id="smer" value="<%= smer %>" />
             <button type="button" class="triangle-button backward" onclick="navigate('backward')"></button>
             <input type="date" name="currentDay" id="currentDay" value="<%= currentDay %>" />
@@ -117,25 +116,6 @@
     <script>
 
 
-        function toggleCheckbox(checkbox_meno) {
-
-            if(checkbox_meno == "checkbox_pos"){
-
-                document.getElementById('checkbox_neg').checked = false;
-                document.getElementById('smer').value = "POS";
-                document.querySelector('form').submit();
-
-
-            } else {
-
-                document.getElementById('checkbox_pos').checked = false;
-                document.getElementById('smer').value = "NEG";
-                document.querySelector('form').submit();
-
-            }
-        
-        };
-
         function navigate(direction) {
             document.getElementById('direction').value = direction;
             document.querySelector('form').submit();
@@ -203,7 +183,7 @@
         });
     </script>
 
-<script src="js/script.js"></script>
+<script src="js/script-picasso-pre.js"></script>
 
 </body>
 </html>

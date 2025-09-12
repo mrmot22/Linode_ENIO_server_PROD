@@ -27,8 +27,6 @@ router.get('/',checkAuthenticated, async(req, res) => {
   const formattedDate = today.toISOString().split('T')[0];
   let vyraz = formattedDate.replace(/-/g,'_') // Format: YYYY-MM-DD
 
-  delete today, formattedDate;
-
   try{
 
     const QH_data = await qh_OKTE_ceny.find(

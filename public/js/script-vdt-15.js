@@ -38,7 +38,7 @@ function navigate(direction) {
         return;
     }
     
-    console.log('Current Date:', currentDate, 'Direction:', direction)
+
     if (direction === 'forward') {
         currentDate.setDate(currentDate.getDate() + 1);
     } else if (direction === 'backward') {
@@ -119,15 +119,63 @@ async function loadDataForDay(date) {
 }
 
 function startAutoRefresh() {
-    // Refresh immediately, then every 15 minutes (900,000 milliseconds)
-    
-    setInterval(() => {
-        const currentDate = document.getElementById('currentDay').value;
-        console.log('Auto-refreshing data at:', new Date().toLocaleTimeString());
-        loadDataForDay(currentDate);
-    }, 15 * 60 * 1000); // 15 minutes in milliseconds
-}
+    const canvas = document.getElementById("circle");
+    const ctx = canvas.getContext("2d");
+    const radius = 14;
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    const duration = 15 * 60 * 1000; // 15 seconds
 
+    let startTime = Date.now(); // Changed to let so it can be reassigned
+
+    function drawCircle(fraction) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Outline circle
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+        ctx.strokeStyle = "green";
+        ctx.stroke();
+
+        // Green arc (clockwise shrinking)
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.arc(
+            centerX,
+            centerY,
+            radius,
+            -Math.PI / 2,                          // start at top
+            -Math.PI / 2 - 2 * Math.PI * fraction, // clockwise
+            true                                   // force clockwise
+        );
+        ctx.closePath();
+        ctx.fillStyle = "green";
+        ctx.fill();
+    }
+
+    function update() {
+        let elapsed = Date.now() - startTime;
+        let fraction = 1 - elapsed / duration; // goes from 1 → 0
+
+        if (fraction <= 0) {
+            const initialDate = document.getElementById('currentDay').value;
+            
+            if (initialDate) {
+                loadDataForDay(initialDate);
+            }
+            
+            // Reset the timer
+            startTime = Date.now();
+            fraction = 1;
+        }
+        
+        drawCircle(fraction);
+        requestAnimationFrame(update);
+    }
+
+    drawCircle(1); // full at start
+    requestAnimationFrame(update);
+}
 
 
 // Load initial data when page loads

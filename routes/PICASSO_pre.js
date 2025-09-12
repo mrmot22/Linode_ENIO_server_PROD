@@ -15,8 +15,6 @@ router.get('/',checkAuthenticated, async(req, res) => {
   const formattedDate = today.toISOString().split('T')[0];
   let vyraz = formattedDate.replace(/-/g,'_') // Format: YYYY-MM-DD
   
-  delete today
-
   try{
 
     const QH_data = await QH_picasso_avg.find(
@@ -63,26 +61,14 @@ router.get('/',checkAuthenticated, async(req, res) => {
 
 // ------------------------------------------------------------------------------- Router for POST request to change the date
 
-router.post('/',checkAuthenticated, async(req,res) => {
+router.post('/data',checkAuthenticated, async(req,res) => {
 
-  const { direction, currentDay, smer } = req.body;
+  const { currentDay, smer } = req.body;
 
-  let date = new Date(currentDay);
-  let new_date = new Date(date);
+  console.log('Received date:', currentDay, 'smer:', smer);
 
-  if (direction.toString() == "backward") {
-
-    new_date.setDate(date.getDate() -1);
-
-  } else if  (direction.toString() == "forward")  {
-
-    new_date.setDate(date.getDate() + 1);
-
-  } else {
-
-    new_date.setDate(date.getDate() + 0);
-  }
-
+  let new_date = new Date(currentDay);
+ 
   const formattedDate = new_date.toISOString().split('T')[0];
   let vyraz = formattedDate.replace(/-/g,'_') // Format: YYYY-MM-DD
 
@@ -118,9 +104,9 @@ router.post('/',checkAuthenticated, async(req,res) => {
         cena_min: item.Cena_SEPS_POS_min 
 
       }));
-
-
-      res.render('PICASSO_pre', { currentDay: formattedDate, dataJSON: processedData, smer: smer});
+    
+    console.log('Processed Data:', processedData);
+    res.json( { dataJSON: processedData, smer: smer});
 
     } catch (err) {
       console.error('Error fetching data:', err);
@@ -161,9 +147,9 @@ router.post('/',checkAuthenticated, async(req,res) => {
 
       }));
 
-      
+      console.log('Processed Data:', processedData);
 
-      res.render('PICASSO_pre', { currentDay: formattedDate, dataJSON: processedData, smer: smer});
+    res.json( { dataJSON: processedData, smer: smer});
 
     } catch (err) {
       console.error('Error fetching data:', err);
