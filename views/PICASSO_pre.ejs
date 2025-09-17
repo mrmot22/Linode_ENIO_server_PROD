@@ -15,11 +15,14 @@
             <img src="/img/Enio_wordmark_black_background.jpg" alt="Logo" style="height: 50px; width: auto;">
         </div>
         <form id="dateForm" class="navigation-form">
-            <input type="hidden" name="smer" id="smer" value="<%= smer %>" />
+            <input type="hidden" name="smer" id="smer" value="POS" />
             <button type="button" class="triangle-button backward" onclick="navigate('backward')"></button>
             <input type="date" name="currentDay" id="currentDay" value="<%= currentDay %>" />
             <button type="button" class="triangle-button forward" onclick="navigate('forward')"></button>
         </form>
+        <div class="auto-timer">
+            <canvas id="circle" width="30" height="30"></canvas>
+        </div>
 
     </div>
     <div class="navigate-line">
@@ -29,16 +32,10 @@
         <div class="home-text">Ceny PICASSO - prehľad cien aktivovaných ponúk zo strany centrálného regulátora</div>
         <div class="checkbox-group">
             <label>
-                <input type="checkbox" id="checkbox_pos" onclick="toggleCheckbox('checkbox_pos')" 
-                <% if (smer == "POS") { %>
-                    <%= "checked" %>
-                    <% } %>>Ceny PICASSO pre kladnú regulačnú elektrinu
+                <input type="checkbox" id="checkbox_pos" onclick="toggleCheckbox('checkbox_pos')" checked>Ceny PICASSO pre kladnú regulačnú elektrinu
             </label>
             <label>
-                <input type="checkbox" id="checkbox_neg" onclick="toggleCheckbox('checkbox_neg')"
-                <% if (smer == "NEG") { %>
-                    <%= "checked" %>
-                    <% } %>>Ceny PICASSO pre zápornú regulačnú elektrinu
+                <input type="checkbox" id="checkbox_neg" onclick="toggleCheckbox('checkbox_neg')">Ceny PICASSO pre zápornú regulačnú elektrinu
             </label>
         </div>
 
@@ -53,13 +50,7 @@
             <canvas id="myChart"></canvas>
         </div>
         <div class="right">
-            <h3>
-                <% if (smer == "POS") { %>
-                    <%= "Prehľad cien PICASSO - Kladná RE" %>
-                    <% } else { %>
-                    <%= "Prehľad cien PICASSO - Záporná RE" %>
-                    <% } %>
-                </h3>
+            <h3 id="smer-nadpis">Prehľad cien PICASSO - Kladná RE</h3>
             <table>
                 <thead>
                     <tr>
@@ -114,21 +105,6 @@
     </div>
 
     <script>
-
-
-        function navigate(direction) {
-            document.getElementById('direction').value = direction;
-            document.querySelector('form').submit();
-        }
-
-
-        dateInput = document.getElementById('currentDay');
-        dateInput.addEventListener('change', () => {
-            const selectedDate = dateInput.value; // e.g., "2025-01-01"
-            if (selectedDate) {
-                document.querySelector('form').submit(); // Send date to server
-            }
-        });
 
 
         let dataGraf_obj = ' <%-JSON.stringify(dataJSON) %> ';

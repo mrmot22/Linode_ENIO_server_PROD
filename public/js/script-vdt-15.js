@@ -124,7 +124,7 @@ function startAutoRefresh() {
     const radius = 14;
     const centerX = canvas.width / 2;
     const centerY = canvas.height / 2;
-    const duration = 15 * 60 * 1000; // 15 seconds
+    const duration = 15 * 60 * 1000; // 15 minutes
 
     let startTime = Date.now(); // Changed to let so it can be reassigned
 

@@ -46,9 +46,8 @@ router.get('/',checkAuthenticated, async(req, res) => {
 
     }));
 
-    let smer = "POS"
 
-    res.render('PICASSO_pre', { currentDay: formattedDate, dataJSON: processedData, smer: smer});
+    res.render('PICASSO_pre', { currentDay: formattedDate, dataJSON: processedData});
 
   } catch (err) {
     console.error('Error fetching data:', err);
@@ -105,7 +104,7 @@ router.post('/data',checkAuthenticated, async(req,res) => {
 
       }));
     
-    res.json( { dataJSON: processedData, smer: smer});
+    res.json( { currentDay: formattedDate, dataJSON: processedData, smer: smer});
 
     } catch (err) {
       console.error('Error fetching data:', err);
@@ -147,7 +146,7 @@ router.post('/data',checkAuthenticated, async(req,res) => {
       }));
 
 
-    res.json( { dataJSON: processedData, smer: smer});
+    res.json( { currentDay: formattedDate, dataJSON: processedData, smer: smer});
 
     } catch (err) {
       console.error('Error fetching data:', err);
