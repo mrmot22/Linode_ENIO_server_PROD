@@ -160,13 +160,10 @@ router.post('/data',checkAuthenticated, async(req,res) => {
         IDA3_nakup: qh.IDA3_nakup_SK_MW ?? null, // Ensure a default value
         IDA3_predaj: qh.IDA3_predaj_SK_MW ?? null, // Ensure a default value
         utc_cas: formatUTCToCET(qh.utc_cas) ?? null, // Ensure a default value
-        DT_SK_cena: matchingDT ? mmatchingDT.DT_data.DT_SK_cena : null // Handle cases where no match is found
+        DT_SK_cena: matchingDT ? matchingDT.DT_data.DT_SK_cena : null // Handle cases where no match is found
       }
 
     });
-
-    console.log('Processed Data:', processedData);
-
 
     res.json({  currentDay: formattedDate,
                 dataJSON: processedData }); // Render index.ejs and pass the data
