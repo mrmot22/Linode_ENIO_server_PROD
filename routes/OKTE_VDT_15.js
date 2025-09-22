@@ -51,7 +51,7 @@ router.get('/',checkAuthenticated, async(req, res) => {
     const DT_data = await hodinove_OKTE_ceny.find(
       { oh_perioda: { $regex: `^${vyraz}` } }, // Filter condition
       { oh_perioda: 1,
-        DT_SK_cena: 1,
+        'DT_data.DT_SK_cena': 1,
         'vdt_data.OKTE_VDT_price_wavg': 1
       } // Projection: Include oh_perioda and DT_SK_cena, exclude _id
     ).sort({ oh_perioda: 1 });
@@ -74,7 +74,7 @@ router.get('/',checkAuthenticated, async(req, res) => {
         vdt_15_max: matchingDT ? qh.vdt_data.OKTE_VDT_price_max : null, // Handle cases where no match is found
         vdt_15_nakup: matchingDT ? qh.vdt_data.OKTE_VDT_nakup_obj : null, // Handle cases where no match is found
         vdt_15_predaj: matchingDT ? qh.vdt_data.OKTE_VDT_predaj_obj : null, // Handle cases where no match is found
-        DT_SK_cena: matchingDT ? matchingDT.DT_SK_cena : null, // Handle cases where no match is found
+        DT_SK_cena: matchingDT ? matchingDT.DT_data.DT_SK_cena: null, // Handle cases where no match is found
         vdt_60_avg: matchingDT ? matchingDT.vdt_data.OKTE_VDT_price_wavg : null, // Handle cases where no match is found
         utc_cas: formatUTCToCET(qh.utc_cas) ?? null, // Ensure a default value
       }
@@ -134,7 +134,7 @@ router.post('/data',checkAuthenticated, async(req,res) => {
     const DT_data = await hodinove_OKTE_ceny.find(
       { oh_perioda: { $regex: `^${vyraz}` } }, // Filter condition
       { oh_perioda: 1,
-        DT_SK_cena: 1,
+        'DT_data.DT_SK_cena': 1, 
         'vdt_data.OKTE_VDT_price_wavg': 1
       } // Projection: Include oh_perioda and DT_SK_cena, exclude _id
     ).sort({ oh_perioda: 1 });
@@ -157,7 +157,7 @@ router.post('/data',checkAuthenticated, async(req,res) => {
         vdt_15_max: matchingDT ? qh.vdt_data.OKTE_VDT_price_max : null, // Handle cases where no match is found
         vdt_15_nakup: matchingDT ? qh.vdt_data.OKTE_VDT_nakup_obj : null, // Handle cases where no match is found
         vdt_15_predaj: matchingDT ? qh.vdt_data.OKTE_VDT_predaj_obj : null, // Handle cases where no match is found
-        DT_SK_cena: matchingDT ? matchingDT.DT_SK_cena : null, // Handle cases where no match is found
+        DT_SK_cena: matchingDT ? matchingDT.DT_data.DT_SK_cena: null, // Handle cases where no match is found
         vdt_60_avg: matchingDT ? matchingDT.vdt_data.OKTE_VDT_price_wavg : null, // Handle cases where no match is found
         utc_cas: formatUTCToCET(qh.utc_cas) ?? null, // Ensure a default value
       }

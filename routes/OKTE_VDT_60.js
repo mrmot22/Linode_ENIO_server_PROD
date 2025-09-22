@@ -6,7 +6,6 @@ const hodinove_OKTE_ceny = require('../models/H_data');
 const qh_OKTE_ceny = require('../models/QH_data');
 
 
-
 function formatUTCToCET(utcDateString) {
 
   if (!utcDateString) return null;
@@ -29,15 +28,12 @@ router.get('/',checkAuthenticated, async(req, res) => {
   const formattedDate = today.toISOString().split('T')[0];
   let vyraz = formattedDate.replace(/-/g,'_') // Format: YYYY-MM-DD
 
-  delete today;
-
-
   try{
 
     const VDT_data_60 = await hodinove_OKTE_ceny.find(
       { oh_perioda: { $regex: `^${vyraz}` } }, // Filter condition
       { oh_perioda: 1,
-        DT_SK_cena: 1,
+        'DT_data.DT_SK_cena': 1,
         utc_cas: 1,
         'vdt_data.OKTE_VDT_price_wavg': 1,
         'vdt_data.OKTE_VDT_price_min': 1,
@@ -86,7 +82,7 @@ router.get('/',checkAuthenticated, async(req, res) => {
       return{
 
         perioda: item.oh_perioda.slice(-2), // Extract last two characters
-        cena_SK: item.DT_SK_cena ?? null, // Ensure a default value
+        cena_SK: item.DT_data.DT_SK_cena ?? null, // Ensure a default value
         cena_VDT60_avg: item.vdt_data.OKTE_VDT_price_wavg ?? null, // Ensure a default value
         cena_VDT60_min: item.vdt_data.OKTE_VDT_price_min ?? null, // Ensure a default value
         cena_VDT60_max: item.vdt_data.OKTE_VDT_price_max ?? null, // Ensure a default value
@@ -135,7 +131,7 @@ router.post('/data',checkAuthenticated, async(req,res) => {
     const VDT_data_60 = await hodinove_OKTE_ceny.find(
       { oh_perioda: { $regex: `^${vyraz}` } }, // Filter condition
       { oh_perioda: 1,
-        DT_SK_cena: 1,
+       'DT_data.DT_SK_cena': 1,
         utc_cas: 1,
         'vdt_data.OKTE_VDT_price_wavg': 1,
         'vdt_data.OKTE_VDT_price_min': 1,
@@ -185,7 +181,7 @@ router.post('/data',checkAuthenticated, async(req,res) => {
       return{
 
         perioda: item.oh_perioda.slice(-2), // Extract last two characters
-        cena_SK: item.DT_SK_cena ?? null, // Ensure a default value
+        cena_SK: item.DT_data.DT_SK_cena ?? null,  // Ensure a default value
         cena_VDT60_avg: item.vdt_data.OKTE_VDT_price_wavg ?? null, // Ensure a default value
         cena_VDT60_min: item.vdt_data.OKTE_VDT_price_min ?? null, // Ensure a default value
         cena_VDT60_max: item.vdt_data.OKTE_VDT_price_max ?? null, // Ensure a default value

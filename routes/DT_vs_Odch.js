@@ -39,8 +39,6 @@ router.get('/',checkAuthenticated, async(req, res) => {
 
   const formattedDate = yesterday.toISOString().split('T')[0];
   let vyraz = formattedDate.replace(/-/g,'_') // Format: YYYY-MM-DD
-  
-  delete today, yesterday
 
 
   try{
@@ -53,7 +51,8 @@ router.get('/',checkAuthenticated, async(req, res) => {
 
     const DT_data = await DT_OKTE_ceny.find(
       { oh_perioda: { $regex: `^${vyraz}` } }, // Filter condition
-      { oh_perioda: 1, DT_SK_cena: 1 } // Projection: Include oh_perioda and DT_SK_cena, exclude _id
+      { oh_perioda: 1,
+        'DT_data.DT_SK_cena': 1 } // Projection: Include oh_perioda and DT_SK_cena, exclude _id
     ).sort({ oh_perioda: 1 });
 
     const processedData = QH_data.map(qh => {
@@ -66,7 +65,7 @@ router.get('/',checkAuthenticated, async(req, res) => {
         perioda: qh.qh_num,
         cena_odch: qh.cena_odch ?? null, // Ensure a default value
         sys_odch: qh.sys_odch ?? null, // Ensure a default value
-        DT_SK_cena: matchingDT ? matchingDT.DT_SK_cena : null, // Handle cases where no match is found
+        DT_SK_cena: matchingDT ? matchingDT.DT_data.DT_SK_cena : null, // Handle cases where no match is found
         utc_cas: formatUTCToCET(qh.utc_cas) ?? null // Ensure a default value
 
       }
@@ -81,8 +80,7 @@ router.get('/',checkAuthenticated, async(req, res) => {
   }
 
 
-  
-})
+});
 
 
 router.post('/',checkAuthenticated, async(req,res) => {
@@ -118,7 +116,8 @@ router.post('/',checkAuthenticated, async(req,res) => {
 
     const DT_data = await DT_OKTE_ceny.find(
       { oh_perioda: { $regex: `^${vyraz}` } }, // Filter condition
-      { oh_perioda: 1, DT_SK_cena: 1, _id: 0 } // Projection: Include oh_perioda and DT_SK_cena, exclude _id
+      { oh_perioda: 1,
+        'DT_data.DT_SK_cena': 1 } // Projection: Include oh_perioda and DT_SK_cena, exclude _id
     ).sort({ oh_perioda: 1 });
 
     const processedData = QH_data.map(qh => {
@@ -131,7 +130,7 @@ router.post('/',checkAuthenticated, async(req,res) => {
         perioda: qh.qh_num,
         cena_odch: qh.cena_odch ?? null, // Ensure a default value
         sys_odch: qh.sys_odch ?? null, // Ensure a default value
-        DT_SK_cena: matchingDT ? matchingDT.DT_SK_cena : null, // Handle cases where no match is found
+        DT_SK_cena: matchingDT ? matchingDT.DT_data.DT_SK_cena : null, // Handle cases where no match is found
         utc_cas: formatUTCToCET(qh.utc_cas) ?? null // Ensure a default value
 
       }

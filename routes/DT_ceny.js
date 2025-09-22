@@ -23,7 +23,6 @@ router.get('/',checkAuthenticated, async(req, res) => {
   const today = new Date();
   const tomorrow = new Date(today);
   let currentHours = today.getHours();
-  let currentMinutes = today.getMinutes();
 
   if (currentHours >= 11) {                       // hodina 13. pre linode server
 
@@ -46,11 +45,11 @@ router.get('/',checkAuthenticated, async(req, res) => {
     const OKTE_data = await DT_OKTE_ceny.find(query,
 
       { oh_perioda: 1,
-        DT_SK_cena: 1,
-        DT_CZ_cena: 1,
-        DT_DE_cena: 1,
-        DT_HU_cena: 1,
-        DT_PL_cena: 1,
+        'DT_data.DT_SK_cena': 1,
+        'DT_data.DT_CZ_cena': 1,
+        'DT_data.DT_DE_cena': 1,
+        'DT_data.DT_HU_cena': 1,
+        'DT_data.DT_PL_cena': 1,
         utc_cas: 1,
       }
 
@@ -59,11 +58,11 @@ router.get('/',checkAuthenticated, async(req, res) => {
     // Process the data to include the extracted period number
     const processedData = OKTE_data.map(item => ({
       perioda: item.oh_perioda.slice(-2), // Extract last two characters
-      cena_SK: item.DT_SK_cena ?? null, // Ensure a default value
-      cena_CZ: item.DT_CZ_cena ?? null, // Ensure a default value
-      cena_DE: item.DT_DE_cena ?? null, // Ensure a default value
-      cena_HU: item.DT_HU_cena ?? null, // Ensure a default value
-      cena_PL: item.DT_PL_cena ?? null, // Ensure a default value
+      cena_SK: item.DT_data.DT_SK_cena ?? null, // Ensure a default value
+      cena_CZ: item.DT_data.DT_CZ_cena ?? null, // Ensure a default value
+      cena_DE: item.DT_data.DT_DE_cena ?? null, // Ensure a default value
+      cena_HU: item.DT_data.DT_HU_cena ?? null, // Ensure a default value
+      cena_PL: item.DT_data.DT_PL_cena ?? null, // Ensure a default value
       utc_cas: formatUTCToCET(item.utc_cas) ?? null // Ensure a default value
     
     }));
@@ -108,11 +107,11 @@ router.post('/data',checkAuthenticated, async(req,res) => {
 
 
       { oh_perioda: 1,
-        DT_SK_cena: 1,
-        DT_CZ_cena: 1,
-        DT_DE_cena: 1,
-        DT_HU_cena: 1,
-        DT_PL_cena: 1,
+        'DT_data.DT_SK_cena': 1,
+        'DT_data.DT_CZ_cena': 1,
+        'DT_data.DT_DE_cena': 1,
+        'DT_data.DT_HU_cena': 1,
+        'DT_data.DT_PL_cena': 1,
         utc_cas: 1,
       }
 
@@ -120,11 +119,11 @@ router.post('/data',checkAuthenticated, async(req,res) => {
   
     const processedData = OKTE_data.map(item => ({
       perioda: item.oh_perioda.slice(-2), // Extract last two characters
-      cena_SK: item.DT_SK_cena ?? null, // Ensure a default value
-      cena_CZ: item.DT_CZ_cena ?? null, // Ensure a default value
-      cena_DE: item.DT_DE_cena ?? null, // Ensure a default value
-      cena_HU: item.DT_HU_cena ?? null, // Ensure a default value
-      cena_PL: item.DT_PL_cena ?? null, // Ensure a default value
+      cena_SK: item.DT_data.DT_SK_cena ?? null, // Ensure a default value
+      cena_CZ: item.DT_data.DT_CZ_cena ?? null, // Ensure a default value
+      cena_DE: item.DT_data.DT_DE_cena ?? null, // Ensure a default value
+      cena_HU: item.DT_data.DT_HU_cena ?? null, // Ensure a default value
+      cena_PL: item.DT_data.DT_PL_cena ?? null, // Ensure a default value
       utc_cas: formatUTCToCET(item.utc_cas) ?? null // Ensure a default value
     }));
 

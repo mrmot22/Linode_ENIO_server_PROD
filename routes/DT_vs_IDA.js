@@ -39,9 +39,6 @@ router.get('/',checkAuthenticated, async(req, res) => {
 
   const formattedDate = yesterday.toISOString().split('T')[0];
   let vyraz = formattedDate.replace(/-/g,'_') // Format: YYYY-MM-DD
-  
-  delete today, yesterday, currentHours
-
 
   try{
 
@@ -67,7 +64,8 @@ router.get('/',checkAuthenticated, async(req, res) => {
 
     const DT_data = await DT_OKTE_ceny.find(
       { oh_perioda: { $regex: `^${vyraz}` } }, // Filter condition
-      { oh_perioda: 1, DT_SK_cena: 1 } // Projection: Include oh_perioda and DT_SK_cena, exclude _id
+      { oh_perioda: 1,
+        'DT_data.DT_SK_cena': 1  } // Projection: Include oh_perioda and DT_SK_cena, exclude _id
     ).sort({ oh_perioda: 1 });
 
     const processedData = QH_data.map(qh => {
@@ -89,7 +87,7 @@ router.get('/',checkAuthenticated, async(req, res) => {
         IDA3_nakup: qh.IDA3_nakup_SK_MW ?? null, // Ensure a default value
         IDA3_predaj: qh.IDA3_predaj_SK_MW ?? null, // Ensure a default value
         utc_cas: formatUTCToCET(qh.utc_cas) ?? null, // Ensure a default value
-        DT_SK_cena: matchingDT ? matchingDT.DT_SK_cena : null // Handle cases where no match is found
+        DT_SK_cena: matchingDT ? matchingDT.DT_data.DT_SK_cena : null // Handle cases where no match is found
       }
 
     });
@@ -114,8 +112,6 @@ router.post('/data',checkAuthenticated, async(req,res) => {
   const formattedDate = new_date.toISOString().split('T')[0];
   let vyraz = formattedDate.replace(/-/g,'_') // Format: YYYY-MM-DD
 
-  delete new_date, formattedDate;
-
   try{
 
     const QH_data = await QH_OKTE_IDA.find(
@@ -140,7 +136,9 @@ router.post('/data',checkAuthenticated, async(req,res) => {
 
     const DT_data = await DT_OKTE_ceny.find(
       { oh_perioda: { $regex: `^${vyraz}` } }, // Filter condition
-      { oh_perioda: 1, DT_SK_cena: 1, _id: 0 } // Projection: Include oh_perioda and DT_SK_cena, exclude _id
+      { oh_perioda: 1, 
+        'DT_data.DT_SK_cena': 1
+      } // Projection: Include oh_perioda and DT_SK_cena, exclude _id
     ).sort({ oh_perioda: 1 });
 
     const processedData = QH_data.map(qh => {
@@ -162,7 +160,7 @@ router.post('/data',checkAuthenticated, async(req,res) => {
         IDA3_nakup: qh.IDA3_nakup_SK_MW ?? null, // Ensure a default value
         IDA3_predaj: qh.IDA3_predaj_SK_MW ?? null, // Ensure a default value
         utc_cas: formatUTCToCET(qh.utc_cas) ?? null, // Ensure a default value
-        DT_SK_cena: matchingDT ? matchingDT.DT_SK_cena : null // Handle cases where no match is found
+        DT_SK_cena: matchingDT ? mmatchingDT.DT_data.DT_SK_cena : null // Handle cases where no match is found
       }
 
     });

@@ -66,8 +66,13 @@
 
                             </td>
 
-                            <td><%= item.DT_SK_cena.toFixed(2) %></td>
-
+                            <td>
+                                <% if (item.DT_SK_cena !== null && item.DT_SK_cena !== undefined) { %>
+                                    <%= item.DT_SK_cena.toFixed(2) %>
+                                <% } else { %>
+                                    N/A
+                                <% } %>
+                            </td>
                             <td>
                                 <% if (item.cena_odch !== null && item.cena_odch !== undefined) { %>
                                     <%= item.cena_odch.toFixed(2) %>
