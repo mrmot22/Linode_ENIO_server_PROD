@@ -78,6 +78,8 @@ const PpS_disponibilita_Router = require('./routes/SEPS_PpS_dispo')
 const market_orderbook_Router = require('./routes/market-orderbook')
 const OKTE_VDT_60_Router = require('./routes/OKTE_VDT_60')
 const OKTE_VDT_15_Router = require('./routes/OKTE_VDT_15')
+const SEPS_ponuky_disp_Router = require('./routes/DISP_ponuky')
+
 
 // Využitie routerov pre jednotlivé routy
 
@@ -93,6 +95,8 @@ app.use('/market-orderbook', market_orderbook_Router)
 app.use('/DT-ceny', DT_ceny_Router)
 app.use('/VDT-60', OKTE_VDT_60_Router)
 app.use('/VDT-15', OKTE_VDT_15_Router)
+app.use('/DISP-ponuky', SEPS_ponuky_disp_Router)
+
 
 // Start the server
 app.listen(port, () => {

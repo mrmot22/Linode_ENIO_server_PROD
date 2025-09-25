@@ -14,6 +14,7 @@ const S4_picasso_Schema = new mongoose.Schema({
     ceny_SEPS: Array,
     aFRR_POS: Array,
     aFRR_NEG: Array,
+    SEPS_FCR_disp: Array,
 
 });
 

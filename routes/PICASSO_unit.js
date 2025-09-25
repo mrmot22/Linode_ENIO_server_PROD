@@ -62,7 +62,6 @@ router.get('/',checkAuthenticated, async(req, res) => {
           }));
   });
 
-
 res.render('PICASSO_unit', { currentDay: formattedDate, smer: "POS", unitList: unitList, unitFinder: unit_id, dataJSON: result }); // Render PICASSO_unit.ejs and pass the data
 
 
