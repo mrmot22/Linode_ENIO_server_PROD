@@ -15,7 +15,8 @@
             <img src="/img/Enio_wordmark_black_background.jpg" alt="Logo" style="height: 50px; width: auto;">
         </div>
         <form id="dateForm" class="navigation-form">
-            <input type="hidden" name="direction" id="direction" />
+            <input type="hidden" name="sluzbaFinder" id="sluzbaFinder" value="<%= sluzbaFinder %>"/>
+            <input type="hidden" name="ponukaFinder" id="ponukaFinder" value="<%= akt_ponuka %>" />
             <button type="button" class="triangle-button backward" onclick="navigate('backward')"></button>
             <input type="date" name="currentDay" id="currentDay" value="<%= currentDay %>" />
             <button type="button" class="triangle-button forward" onclick="navigate('forward')"></button>
@@ -26,14 +27,14 @@
         <div id="home-icon" onclick="toggleNav()">
             <img src="/img/Enio-home-icon-small.png" alt="home" style="height: 20px; width: auto;">
         </div>
-        <div class="home-text">Výsledky denného trhu a výsledky IDA</div>
+        <div class="home-text">Prehľad ponúk disponibility</div>
         <div class="checkbox-group">
             <label for="myListBox_sluzba">Výber služby:</label>
             <select id="myListBox_sluzba" name="myListBox_sluzba" onchange="zmenaSluzby(event)">
 
                 <option value ="fcr" <% if ( sluzbaFinder  == "fcr") { %><%= "selected" %><% } %> >FCR</option>
                 <option value ="afrrp" <% if ( sluzbaFinder  == "afrrp") { %><%= "selected" %><% } %> >aFRR +</option>
-                <option value ="affrn" <% if ( sluzbaFinder  == "affrn") { %><%= "selected" %><% } %> >aFRR -</option>
+                <option value ="afrrn" <% if ( sluzbaFinder  == "afrrn") { %><%= "selected" %><% } %> >aFRR -</option>
                 <option value ="mfrrp" <% if ( sluzbaFinder  == "mfrrp") { %><%= "selected" %><% } %> >mFRR +</option>
                 <option value ="mfrrn" <% if ( sluzbaFinder  == "mfrrn") { %><%= "selected" %><% } %> >mFRR -</option>
 
@@ -46,6 +47,8 @@
                         <%= ponuka %>
                     </option>
                 <% }); %>
+
+
             </select>
         </div>
     </div>
@@ -70,54 +73,54 @@
                     <tr>
                         <th>Perioda</th>
                         <th>Čas</th>
-                        <th>Cena DT</th>
-                        <th>Cena DT-DE15</th>
-                        <th>Cena IDA1</th>
-                        <th>Cena IDA2</th>
-                        <th>Cena IDA3</th>
+                        <th>Min. cena</th>
+                        <th>Max. cena</th>
+                        <th>Avg. cena</th>
+                        <th>Množstvo</th>
+                        <th>Cena</th>
                     </tr>
                 </thead>
                  <tbody id="table-body">
                     
                     <% dataJSON.forEach(function(item) { %>
                         <tr>
-                            <td class="timestamp"><%= item.perioda %></td>
-                            <td class="timestamp"><%= item.utc_cas %></td>
+                            <td class="timestamp"><%= item.qh_num %></td>
+                            <td class="timestamp"><%= item.cas %></td>
                             <td>
-                                <% if (item.DT_SK_cena !== null && item.DT_SK_cena !== undefined) { %>
-                                    <%= item.DT_SK_cena.toFixed(2) %>
+                                <% if (item.disp_min !== null && item.disp_min !== undefined) { %>
+                                    <%= item.disp_min.toFixed(2) %>
                                 <% } else { %>
                                     N/A
                                 <% } %>
 
                             </td>
                             <td>
-                                <% if (item.DT_cena_DE15 !== null && item.DT_cena_DE15 !== undefined) { %>
-                                    <%= item.DT_cena_DE15.toFixed(2) %>
+                                <% if (item.disp_max !== null && item.disp_max !== undefined) { %>
+                                    <%= item.disp_max.toFixed(2) %>
                                 <% } else { %>
                                     N/A
                                 <% } %>
 
                             </td>
                             <td>
-                                <% if (item.IDA1_cena !== null && item.IDA1_cena !== undefined) { %>
-                                    <%= item.IDA1_cena.toFixed(2) %>
+                                <% if (item.disp_wavg !== null && item.disp_wavg !== undefined) { %>
+                                    <%= item.disp_wavg.toFixed(2) %>
                                 <% } else { %>
                                     N/A
                                 <% } %>
 
                             </td>                        
                             <td>
-                                <% if (item.IDA2_cena !== null && item.IDA2_cena !== undefined) { %>
-                                    <%= item.IDA2_cena.toFixed(2) %>
+                                <% if (item.quantity !== null && item.quantity !== undefined) { %>
+                                    <%= item.quantity.toFixed(2) %>
                                 <% } else { %>
                                     N/A
                                 <% } %>
 
                             </td>
                             <td>
-                                <% if (item.IDA3_cena !== null && item.IDA3_cena !== undefined) { %>
-                                    <%= item.IDA3_cena.toFixed(2) %>
+                                <% if (item.price !== null && item.price !== undefined) { %>
+                                    <%= item.price.toFixed(2) %>
                                 <% } else { %>
                                     N/A
                                 <% } %>
@@ -135,22 +138,13 @@
         let dataGraf_obj = ' <%-JSON.stringify(dataJSON) %> ';
         let dataGraf = JSON.parse(dataGraf_obj);
 
-        const labels = dataGraf.map(item => item.perioda);
-        const DT_SK_cena = dataGraf.map(item => item.DT_SK_cena || null);
-        const Cena_IDA1 = dataGraf.map(item => item.IDA1_cena ?? null);
-        const Cena_IDA2 = dataGraf.map(item => item.IDA2_cena ?? null);
-        const Cena_IDA3 = dataGraf.map(item => item.IDA3_cena ?? null);
-        const Cena_DT_DE = dataGraf.map(item => item.DT_cena_DE15 ?? null);
-        const IDA1_predaj = dataGraf.map(item => - item.IDA1_predaj || null);
-        const IDA1_nakup = dataGraf.map(item => item.IDA1_nakup || null);
-        const IDA2_predaj = dataGraf.map(item => - item.IDA2_predaj || null);
-        const IDA2_nakup = dataGraf.map(item => item.IDA2_nakup || null);
-        const IDA3_predaj = dataGraf.map(item => - item.IDA3_predaj || null);
-        const IDA3_nakup = dataGraf.map(item => item.IDA3_nakup || null);
-
-        let kombinovany_array = [...Cena_IDA1, ...Cena_IDA2, ...Cena_IDA3];
-        maximalna_cena = Math.max(...kombinovany_array);
-        minimalna_cena = Math.min(...kombinovany_array);
+        const labels = dataGraf.map(item => item.cas);
+        const disp_wavg = dataGraf.map(item => item.disp_wavg || null);
+        const disp_min = dataGraf.map(item => item.disp_min || null);
+        const disp_max = dataGraf.map(item => item.disp_max || null);
+        const price = dataGraf.map(item => item.price || null);
+        const celkove_mnozstvo = dataGraf.map(item => item.offers_spolu || null);       
+        const mnozstvo = dataGraf.map(item => item.quantity|| null);   
 
 
         const ctx = document.getElementById('chart1').getContext('2d');
@@ -160,69 +154,59 @@
                 labels: labels,
                 datasets: [
                 {
-                    label: 'Cena IDA1',
-                    data: Cena_IDA1,
+                    label: 'Cena ponuku',
+                    data: price,
                     type: 'line',
-                    backgroundColor: 'red',
-                    borderColor: 'red',
+                    backgroundColor: 'green',
+                    borderColor: 'green',
                     borderWidth: 1
                 
                 },
                 {
-                    label: 'Cena IDA2',
-                    data: Cena_IDA2,
-                    backgroundColor: 'blue',
-                    borderColor: 'blue',
-                    borderWidth: 2
-                },
-                {
-                    label: 'Cena IDA3',
-                    data: Cena_IDA3,
-                    backgroundColor: 'green',
-                    borderColor: 'green',
-                    borderWidth: 2
-                },
-                {
-                    label: 'Cena DE-15min',
-                    data: Cena_DT_DE,
-                    backgroundColor: 'grey',
-                    borderColor: 'grey',
-                    borderWidth: 2
-                },
-                {
-                    label: 'Cena DT',
-                    data: DT_SK_cena,
+                    label: 'Cena WAVG',
+                    data: disp_wavg,
                     type: 'line',
-                    fill: 'origin',
-                    stepped: true,
-                    backgroundColor: 'rgba(217, 217, 217, 0.6)',  
-                    borderColor: 'rgba(191, 191, 191, 0.6)',
-                    borderWidth: 2,
+                    backgroundColor: 'red',
+                    borderColor: 'red',
+                    borderWidth: 1,
+                    pointRadius: 1
+                
+                },
+                {
+                    label: 'Cena min.',
+                    data: disp_min,
+                    type: 'line',
+                    backgroundColor:  'rgba(127, 183, 127, 0.3)',
+                    borderColor: 'rgba(127, 183, 127, 0.4)',
+                    borderWidth: 1,
+                    pointRadius: 1
+                },
+                {
+                    label: 'Cena max.',
+                    data: disp_max,
+                    backgroundColor: 'rgba(127, 183, 127, 0.3)',
+                    borderColor: 'rgba(127, 183, 127, 0.4)',
+                    borderWidth: 1,
                     pointRadius: 1,
-                }
+                    fill: '-1'  // Fill between this and the previous dataset
+
+                },
             ]},
             options: {
                 interaction: {
                     intersect: true,
                     mode: 'index'},
-
-                scales: {
-                    y: {
-                        min: minimalna_cena < -500 ? Math.floor(minimalna_cena / 100) * 100 : null,
-                        max: maximalna_cena > 500 ? Math.ceil(maximalna_cena / 100) * 100 : null,
-                    }},
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
                     title: {
                         display: true,
-                        text: 'Prehľad cien ',
+                        text: 'Prehľad cien ponuky ',
                         font: { size: 14 }
                     }
                 }
             },
         });
-
 
         const ctx1 = document.getElementById('chart2').getContext('2d');
         window.myChart2 = new Chart(ctx1, {
@@ -231,53 +215,25 @@
                 labels: labels,
                 datasets: [
                 {
-                    label: 'Nákup IDA1',
-                    data: IDA1_nakup,
-                    type: 'bar',
-                    backgroundColor: 'red',
-                    borderColor: 'red',
-                    borderWidth: 1
-                
-                },
-                {
-                    label: 'Predaj IDA1',
-                    data: IDA1_predaj,
-                    type: 'bar',
-                    backgroundColor: 'rgba(255, 138, 138, 0.6)',
-                    borderColor: 'rgba(255, 138, 138, 0.8)',
-                    borderWidth: 1
-                
-                },
-                {
-                    label: 'Nákup IDA2',
-                    data: IDA2_nakup,
-                    backgroundColor: 'blue',
-                    borderColor: 'blue',
-                    borderWidth: 2
-                },
-                {
-                    label: 'Predaj IDA2',
-                    data: IDA2_predaj,
-                    type: 'bar',
-                    backgroundColor: 'rgba(148, 148, 255, 0.6)',
-                    borderColor: 'rgba(148, 148, 255, 0.8)',
-                    borderWidth: 1
-                
-                },
-                {
-                    label: 'Nákup IDA3',
-                    data: IDA3_nakup,
+                    label: 'Množstvo ponuka',
+                    data: mnozstvo,
+                    type: 'line',
                     backgroundColor: 'green',
                     borderColor: 'green',
-                    borderWidth: 2
+                    borderWidth: 1,
+                    pointRadius: 1,
+                
                 },
                 {
-                    label: 'Predaj IDA3',
-                    data: IDA3_predaj,
-                    backgroundColor: 'rgba(165, 255, 165, 0.6)',
-                    borderColor: 'rgba(165, 255, 165, 0.8)',
-                    borderWidth: 2
+                    label: 'Celkové množstvo',
+                    data: celkove_mnozstvo,
+                    type: 'bar',
+                    backgroundColor: 'rgba(127, 183, 127, 0.3)',
+                    borderColor: 'rgba(127, 183, 127, 0.4)',
+                    borderWidth: 1
+                
                 }
+
 
             ]},
             options: {
@@ -285,28 +241,14 @@
                     intersect: true,
                     mode: 'index'},
                 responsive: true,
-                scales: {
-                    x: {
-                        stacked: true,
-                    },
-                    y: {
-                        stacked: true
-                    }
-                },
                 maintainAspectRatio: false,
-                plugins: {
-                    title: {
-                        display: true,
-                        text: 'Zobchodované množstvo ',
-                        font: { size: 14 }
-                    }
                 }
-            }});
+        });
 
 
     </script>
 
-<script src="js/script-dt-IDA.js"></script>          <!--script, ktorý je zodpovedný pre navigátora-->
+<script src="js/script-disp-ponuka.js"></script>
 
 </body>
 </html>

@@ -8,17 +8,7 @@ const QH_Ponuky = require('../models/4s_data');
 
 //   - Start of the router --HOME -- 
 
-function formatUTCToCET(utcDateString) {
 
-  if (!utcDateString) return null;
-  const date = new Date(utcDateString);
-  return date.toLocaleTimeString('sk-SK', {
-    timeZone: 'Europe/Bratislava',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false
-  });
-}
 
 router.get('/',checkAuthenticated, async(req, res) => {
 
@@ -26,7 +16,7 @@ router.get('/',checkAuthenticated, async(req, res) => {
   let tomorrow = new Date(today);
   let currentHours = today.getHours();
 
-  if (currentHours < 13) {   //Linode cas, skutocny nas cas je 15
+  if (currentHours < 15) {   //Linode cas, skutocny nas cas je 15
 
     tomorrow.setDate(today.getDate() + 0);
 
@@ -68,8 +58,14 @@ router.get('/',checkAuthenticated, async(req, res) => {
 
     const data = await QH_Ponuky.find(query,
       {
+        qh_num: 1,
         cas_zaciatok: 1,
         SEPS_FCR_disp: 1,
+        'DISP_calc.FCR_disp_max': 1,
+        'DISP_calc.FCR_disp_min': 1,
+        'DISP_calc.FCR_disp_wavg': 1,
+        'DISP_calc.FCR_disp_sum_offers': 1,
+
       }
     );
 
@@ -79,13 +75,17 @@ router.get('/',checkAuthenticated, async(req, res) => {
           .filter(item => item.ponuka === akt_ponuka) // Filter by UNIT and stav === true   && item.stav === true
           .map(item => ({
               cas: entry.cas_zaciatok,
+              qh_num: entry.qh_num,
+              disp_max: entry.DISP_calc.FCR_disp_max,
+              disp_min: entry.DISP_calc.FCR_disp_min,
+              disp_wavg: entry.DISP_calc.FCR_disp_wavg,
+              offers_spolu: entry.DISP_calc.FCR_disp_sum_offers,
               ponuka: item.ponuka,
               quantity: item.quantity,
               price: item.price
           }));
   });
 
-  console.log(result);
 
     res.render('DISP_ponuky', { currentDay: formattedDate, sluzbaFinder: sluzbaFinder, ponukyList: ponukyList, akt_ponuka: akt_ponuka, dataJSON: result });
 
@@ -97,82 +97,159 @@ router.get('/',checkAuthenticated, async(req, res) => {
   
 })
 
+// ------------------------------------------------------------------------------- Router for POST request to change the date
 
-router.post('/data',checkAuthenticated, async(req,res) => {
+router.post('/data', checkAuthenticated, async (req, res) => {
+    const { currentDay, ponuka, sluzba } = req.body;
 
-  const { currentDay } = req.body;
+    console.log('Received date:', currentDay, 'ponuka:', ponuka, 'sluzba', sluzba);
 
-  let new_date = new Date(currentDay);
+    let new_date = new Date(currentDay);
+    const formattedDate = new_date.toISOString().split('T')[0];
+    let den_query = formattedDate.replace(/-/g, '_');
 
-  const formattedDate = new_date.toISOString().split('T')[0];
-  let vyraz = formattedDate.replace(/-/g,'_') // Format: YYYY-MM-DD
+    if (!sluzba || typeof sluzba !== 'string') {
+        return res.status(400).json({ error: 'Service parameter is required' });
+    }
 
-  try{
+    if (!ponuka || typeof ponuka !== 'string') {
+        return res.status(400).json({ error: 'Ponuka parameter is required' });
+    }
 
-    const QH_data = await QH_OKTE_IDA.find(
-      {qh_perioda: { $regex: `^${vyraz}` } }, // Filter condition
-      {
-        qh_perioda: 1,
-        qh_num: 1,
-        IDA1_cena: 1,
-        IDA2_cena: 1,
-        IDA3_cena: 1,
-        DT_cena_DE15: 1,
-        IDA1_nakup_SK_MW: 1,
-        IDA1_predaj_SK_MW: 1,
-        IDA2_nakup_SK_MW: 1,
-        IDA2_predaj_SK_MW: 1,
-        IDA3_nakup_SK_MW: 1,
-        IDA3_predaj_SK_MW: 1,
-        utc_cas: 1,
-      } // Projection: Include oh_perioda and DT_SK_cena, exclude _id
+    // CORRECTED FIELD MAPPING - based on your actual data structure
+    const fieldMapping = {
+        'fcr': { mainField: 'SEPS_FCR_disp', dispBase: 'FCR_disp' },
+        'afrrp': { mainField: 'SEPS_aFRRp_disp', dispBase: 'aFRRp_disp' }, // Fixed: aFRRp_disp (not afrrp_disp)
+        'afrrn': { mainField: 'SEPS_aFRRn_disp', dispBase: 'aFRRn_disp' }, // Fixed: aFRRn_disp (not afrrn_disp)
+        'mfrrp': { mainField: 'SEPS_mFRRp_disp', dispBase: 'mFRRp_disp' },
+        'mfrrn': { mainField: 'SEPS_mFRRn_disp', dispBase: 'mFRRn_disp' },
+    };
 
-    ).sort({ qh_perioda: 1 });
+    const mapping = fieldMapping[sluzba];
+    if (!mapping) {
+        return res.status(400).json({ error: 'Invalid service parameter' });
+    }
 
-    const DT_data = await DT_OKTE_ceny.find(
-      { oh_perioda: { $regex: `^${vyraz}` } }, // Filter condition
-      { oh_perioda: 1, 
-        'DT_data.DT_SK_cena': 1
-      } // Projection: Include oh_perioda and DT_SK_cena, exclude _id
-    ).sort({ oh_perioda: 1 });
+    const dbFieldName = mapping.mainField;
+    const dispFieldBase = mapping.dispBase;
 
-    const processedData = QH_data.map(qh => {
+    console.log('Service parameter received:', sluzba);
+    console.log('dbFieldName determined:', dbFieldName);
+    console.log('dispFieldBase determined:', dispFieldBase);
+    console.log('Looking for ponuka:', ponuka);
 
-      const oh_key = qh.qh_perioda.slice(0,-3);   // Removes the last "-XX" qh part
-      const matchingDT = DT_data.find(dt => dt.oh_perioda === oh_key);  // Find the matching DT_data entry
+    try {
+        const aggregationPipeline = [
+            {
+                $match: {
+                    qh_perioda: { $regex: `^${den_query}` },
+                    [dbFieldName]: { $exists: true, $ne: null, $type: 'array' }
+                }
+            },
+            { $unwind: `$${dbFieldName}` },
+            { 
+                $group: { 
+                    _id: `$${dbFieldName}.ponuka`
+                } 
+            },
+            { $sort: { _id: 1 } },
+            { $project: { _id: 0, ponuka: "$_id" } }
+        ];
 
-      return{
+        const uniquePonuky = await QH_Ponuky.aggregate(aggregationPipeline);
+        const ponukyList = uniquePonuky.map(item => item.ponuka);
 
-        perioda: qh.qh_num,
-        IDA1_cena: qh.IDA1_cena ?? null, // Ensure a default value
-        IDA2_cena: qh.IDA2_cena ?? null, // Ensure a default value
-        IDA3_cena: qh.IDA3_cena ?? null, // Ensure a default value
-        DT_cena_DE15: qh.DT_cena_DE15 ?? null, // Ensure a default value
-        IDA1_nakup: qh.IDA1_nakup_SK_MW ?? null, // Ensure a default value
-        IDA1_predaj: qh.IDA1_predaj_SK_MW ?? null, // Ensure a default value
-        IDA2_nakup: qh.IDA2_nakup_SK_MW ?? null, // Ensure a default value
-        IDA2_predaj: qh.IDA2_predaj_SK_MW ?? null, // Ensure a default value
-        IDA3_nakup: qh.IDA3_nakup_SK_MW ?? null, // Ensure a default value
-        IDA3_predaj: qh.IDA3_predaj_SK_MW ?? null, // Ensure a default value
-        utc_cas: formatUTCToCET(qh.utc_cas) ?? null, // Ensure a default value
-        DT_SK_cena: matchingDT ? matchingDT.DT_data.DT_SK_cena : null // Handle cases where no match is found
-      }
+        const query = {
+            "qh_perioda": { $regex: `^${den_query}` },
+            [dbFieldName]: { 
+                $exists: true, 
+                $ne: null, 
+                $type: 'array',
+                $elemMatch: { "ponuka": ponuka } 
+            }
+        };
 
-    });
+        const projection = {
+          qh_num: 1,
+          cas_zaciatok: 1,
+          [dbFieldName]: 1,
+          [`DISP_calc.${dispFieldBase}_max`]: 1,
+          [`DISP_calc.${dispFieldBase}_min`]: 1,
+          [`DISP_calc.${dispFieldBase}_wavg`]: 1,
+          [`DISP_calc.${dispFieldBase}_sum_offers`]: 1,
+        };
 
-    res.json({  currentDay: formattedDate,
-                dataJSON: processedData }); // Render index.ejs and pass the data
+        const data = await QH_Ponuky.find(query, projection).lean();
 
-  } catch (err) {
-    console.error('Error fetching data:', err);
-    res.status(500).send('Internal Server Error');
-  }
 
-})
+        console.log('Found documents:', data.length);
+
+        // Debug: Check the first document structure
+        if (data.length > 0) {
+            console.log('First document fields:', Object.keys(data[0]));
+            console.log(`${dbFieldName} field type:`, typeof data[0][dbFieldName]);
+            console.log(`${dbFieldName} is array:`, Array.isArray(data[0][dbFieldName]));
+            console.log('DISP_calc fields:', data[0].DISP_calc ? Object.keys(data[0].DISP_calc) : 'No DISP_calc');
+        }
+
+        // Safe processing
+        const result = data.flatMap(entry => {
+            try {
+                // Check if the main field exists and is an array
+                if (!entry || !entry[dbFieldName] || !Array.isArray(entry[dbFieldName])) {
+                    console.warn(`Skipping document ${entry._id}: ${dbFieldName} is missing or not an array`);
+                    return [];
+                }
+
+                // Get DISP_calc data safely
+                const dispData = entry.DISP_calc || {};
+                
+                // Filter items by ponuka and map to result format
+                const filteredItems = entry[dbFieldName]
+                    .filter(item => {
+                        if (!item || typeof item !== 'object') {
+                            console.warn(`Skipping invalid item in document ${entry._id}`);
+                            return false;
+                        }
+                        return item.ponuka === ponuka;
+                    })
+                    .map(item => ({
+                        cas: entry.cas_zaciatok,
+                        qh_num: entry.qh_num,
+                        disp_max: dispData[`${dispFieldBase}_max`] ?? null,
+                        disp_min: dispData[`${dispFieldBase}_min`] ?? null,
+                        disp_wavg: dispData[`${dispFieldBase}_wavg`] ?? null,
+                        offers_spolu: dispData[`${dispFieldBase}_sum_offers`] ?? null,
+                        ponuka: item.ponuka,
+                        quantity: item.quantity ?? null,
+                        price: item.price ?? null
+                    }));
+
+                return filteredItems;
+            } catch (error) {
+                console.error('Error processing entry:', entry?._id, error);
+                return [];
+            }
+        });
+
+
+        res.json({
+            currentDay: formattedDate,
+            sluzbaFinder: sluzba,
+            ponukyList: ponukyList,
+            akt_ponuka: ponuka,
+            dataJSON: result
+        });
+
+    } catch (err) {
+        console.error('Error fetching data:', err);
+        res.status(500).json({ error: 'Internal Server Error', details: err.message });
+    }
+});
 
 function checkAuthenticated(req, res, next) {
     if (req.isAuthenticated()) return next();
     res.redirect('/login');
-  }   
+}
 
-module.exports = router
+module.exports = router;

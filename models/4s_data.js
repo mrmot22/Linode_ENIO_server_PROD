@@ -1,5 +1,32 @@
 const mongoose = require('mongoose');
 
+
+const DISP_calc_Schema = new mongoose.Schema({
+
+    FCR_disp_max: Number,
+    FCR_disp_min: Number,
+    FCR_disp_sum_offers: Number,
+    FCR_disp_wavg: Number,
+    aFRRp_disp_max: Number,
+    aFRRp_disp_min: Number,
+    aFRRp_disp_sum_offers: Number,
+    aFRRp_disp_wavg: Number,
+    aFRRn_disp_max: Number,
+    aFRRn_disp_min: Number,
+    aFRRn_disp_sum_offers: Number,
+    aFRRn_disp_wavg: Number,
+    mFRRp_disp_max: Number,
+    mFRRp_disp_min: Number,
+    mFRRp_disp_sum_offers: Number,
+    mFRRp_disp_wavg: Number,
+    mFRRn_disp_max: Number,
+    mFRRn_disp_min: Number,
+    mFRRn_disp_sum_offers: Number,
+    mFRRn_disp_wavg: Number
+
+
+});
+
 const S4_picasso_Schema = new mongoose.Schema({
     qh_perioda: String,
     cas_zaciatok: String,                              // Format: 2025-01-01-01
@@ -15,6 +42,10 @@ const S4_picasso_Schema = new mongoose.Schema({
     aFRR_POS: Array,
     aFRR_NEG: Array,
     SEPS_FCR_disp: Array,
+    DISP_calc:{
+        type: DISP_calc_Schema,
+        default: {}
+    }
 
 });
 
