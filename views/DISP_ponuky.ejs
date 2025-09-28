@@ -39,8 +39,8 @@
                 <option value ="mfrrn" <% if ( sluzbaFinder  == "mfrrn") { %><%= "selected" %><% } %> >mFRR -</option>
 
             </select>
-            <label for="myListBox_unit">Výber ponuky:</label>
-            <select id="myListBox_unit" name="myListBox_unit" onchange="zmenaPonuky(event)">
+            <label for="myListBox_ponuka">Výber ponuky:</label>
+            <select id="myListBox_ponuka" name="myListBox_ponuka" onchange="zmenaPonuky(event)">
 
                 <% ponukyList.forEach(function(ponuka){ %>
                     <option value="<%= ponuka %>" <% if (akt_ponuka === ponuka) {%>selected<%} %>>
@@ -154,7 +154,7 @@
                 labels: labels,
                 datasets: [
                 {
-                    label: 'Cena ponuku',
+                    label: 'Cena ponuky',
                     data: price,
                     type: 'line',
                     backgroundColor: 'green',

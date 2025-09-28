@@ -133,11 +133,6 @@ router.post('/data', checkAuthenticated, async (req, res) => {
     const dbFieldName = mapping.mainField;
     const dispFieldBase = mapping.dispBase;
 
-    console.log('Service parameter received:', sluzba);
-    console.log('dbFieldName determined:', dbFieldName);
-    console.log('dispFieldBase determined:', dispFieldBase);
-    console.log('Looking for ponuka:', ponuka);
-
     try {
         const aggregationPipeline = [
             {
@@ -181,17 +176,6 @@ router.post('/data', checkAuthenticated, async (req, res) => {
 
         const data = await QH_Ponuky.find(query, projection).lean();
 
-
-        console.log('Found documents:', data.length);
-
-        // Debug: Check the first document structure
-        if (data.length > 0) {
-            console.log('First document fields:', Object.keys(data[0]));
-            console.log(`${dbFieldName} field type:`, typeof data[0][dbFieldName]);
-            console.log(`${dbFieldName} is array:`, Array.isArray(data[0][dbFieldName]));
-            console.log('DISP_calc fields:', data[0].DISP_calc ? Object.keys(data[0].DISP_calc) : 'No DISP_calc');
-        }
-
         // Safe processing
         const result = data.flatMap(entry => {
             try {
@@ -220,7 +204,6 @@ router.post('/data', checkAuthenticated, async (req, res) => {
                         disp_min: dispData[`${dispFieldBase}_min`] ?? null,
                         disp_wavg: dispData[`${dispFieldBase}_wavg`] ?? null,
                         offers_spolu: dispData[`${dispFieldBase}_sum_offers`] ?? null,
-                        ponuka: item.ponuka,
                         quantity: item.quantity ?? null,
                         price: item.price ?? null
                     }));
@@ -232,10 +215,8 @@ router.post('/data', checkAuthenticated, async (req, res) => {
             }
         });
 
-
         res.json({
             currentDay: formattedDate,
-            sluzbaFinder: sluzba,
             ponukyList: ponukyList,
             akt_ponuka: ponuka,
             dataJSON: result

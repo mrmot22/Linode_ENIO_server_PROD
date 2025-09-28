@@ -50,10 +50,15 @@ function zmenaSluzby(event) {
     let currentDate = new Date(dateInput.value);
     const newDate = currentDate.toISOString().split('T')[0];
 
+    const selectElement = document.getElementById('myListBox_ponuka');
+    if (selectElement && selectElement.options.length > 0) {
+        selectElement.selectedIndex = 0;
+    }
+
+    document.getElementById('ponukaFinder').value = "ponuka_01"
+
     let currentPonuka = document.getElementById('ponukaFinder').value
     let currentSluzba = document.getElementById('sluzbaFinder').value
-
-    console.log("Menim sluzbu", currentSluzba);
 
     debouncedLoadData(newDate, currentPonuka, currentSluzba);
 
@@ -61,11 +66,19 @@ function zmenaSluzby(event) {
 
 function navigate(direction) {
     const dateInput = document.getElementById('currentDay');
+
+
+    const selectElement = document.getElementById('myListBox_ponuka');
+    if (selectElement && selectElement.options.length > 0) {
+        selectElement.selectedIndex = 0;
+    }
+
+    document.getElementById('ponukaFinder').value = "ponuka_01"
+
     const ponuka = document.getElementById('ponukaFinder').value;
     const sluzba = document.getElementById('sluzbaFinder').value;
 
 
-    
     if (!dateInput.value) {
         console.error('No date selected');
         return;
@@ -87,10 +100,10 @@ function navigate(direction) {
         console.error('Unknown direction:', direction);
         return;
     }
-    
+
     const newDate = currentDate.toISOString().split('T')[0];
     
-    console.log('New Date:', newDate, " Smer:", smer);
+    console.log('New Date:', newDate);
     debouncedLoadData(newDate, ponuka, sluzba);
 }
 
@@ -148,7 +161,6 @@ async function loadDataForDay(date, ponuka, sluzba) {
         }
         
         const newData = await response.json();
-     //   console.log('Data received:', newData);
         
         updatePageWithData(newData);
         
@@ -160,6 +172,7 @@ async function loadDataForDay(date, ponuka, sluzba) {
  function updatePageWithData(data) {
     // Update your charts and other elements here
     if (data.dataJSON ) {
+
         updateTablebody(data.dataJSON);
         updateCharts(data.dataJSON);
     }
@@ -167,19 +180,41 @@ async function loadDataForDay(date, ponuka, sluzba) {
     if (data.currentDay) {
         document.getElementById('currentDay').value = data.currentDay;
      }
+
+     if(data.ponukyList) {
+
+
+        const akt_ponuka = data.akt_ponuka;
+        const ponuky = data.ponukyList;
+
+        aktualizujList(ponuky, akt_ponuka);
+
+
+     }
 }
 
-function startAutoRefresh() {
-    // Refresh immediately, then every 15 minutes (900,000 milliseconds)
-    
-    setInterval(() => {
-        const currentDate = document.getElementById('currentDay').value;
-        console.log('Auto-refreshing data at:', new Date().toLocaleTimeString());
-        loadDataForDay(currentDate);
-    }, 15 * 60 * 1000); // 15 minutes in milliseconds
+
+function aktualizujList(optionsArray, value){
+
+    const selectElement = document.getElementById('myListBox_ponuka');
+    selectElement.innerHTML = '';
+
+    console.log(optionsArray);
+    console.log(value);
+
+    optionsArray.forEach((optionValue, index) => {
+        const option = document.createElement('option');
+        option.value = optionValue;
+        option.textContent = optionValue;
+        
+        // If option value matches the provided value, set as selected
+        if (optionValue === value) {
+            option.selected = true;
+        }
+        
+        selectElement.appendChild(option);
+    });
 }
-
-
 
 // Load initial data when page loads
 document.addEventListener('DOMContentLoaded', function() {
@@ -193,19 +228,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
 });
 
+
+
 function updateTablebody(data) {
     const tableBody = document.getElementById('table-body');
     tableBody.innerHTML = ''; // Clear existing rows
     data.forEach(item => {
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td class="timestamp">${item.perioda}</td>
-            <td class="timestamp">${item.utc_cas}</td>
-            <td>${item.DT_SK_cena  !== null && item.DT_SK_cena  !== undefined ? item.DT_SK_cena.toFixed(2) : 'N/A'}</td>
-            <td>${item.DT_cena_DE15 !== null && item.DT_cena_DE15 !== undefined ? item.DT_cena_DE15.toFixed(2) : 'N/A'}</td>
-            <td>${item.IDA1_cena !== null && item.IDA1_cena !== undefined ? item.IDA1_cena.toFixed(2) : 'N/A'}</td>
-            <td>${item.IDA2_cena !== null && item.IDA2_cena !== undefined ? item.IDA2_cena.toFixed(2) : 'N/A'}</td>
-            <td>${item.IDA3_cena !== null && item.IDA3_cena !== undefined ? item.IDA3_cena.toFixed(2) : 'N/A'}</td>
+            <td class="timestamp">${item.qh_num}</td>
+            <td class="timestamp">${item.cas}</td>
+            <td>${item.disp_min !== null && item.disp_min !== undefined ? item.disp_min.toFixed(2) : 'N/A'}</td>
+            <td>${item.disp_max !== null && item.disp_max !== undefined ? item.disp_max.toFixed(2) : 'N/A'}</td>
+            <td>${item.disp_wavg !== null && item.disp_wavg !== undefined ? item.disp_wavg.toFixed(2) : 'N/A'}</td>
+            <td>${item.quantity !== null && item.quantity !== undefined ? item.quantity.toFixed(2) : 'N/A'}</td>
+            <td>${item.price !== null && item.price !== undefined ? item.price.toFixed(2) : 'N/A'}</td>
         `;
         tableBody.appendChild(row);
     });
@@ -216,25 +253,21 @@ function updateCharts(data) {
     if (window.myChart1) {
 
 
-        window.myChart1.data.labels = data.map(item => item.perioda);
-        window.myChart1.data.datasets[0].data = data.map(item => item.IDA1_cena ?? null);
-        window.myChart1.data.datasets[1].data = data.map(item => item.IDA2_cena  ?? null);
-        window.myChart1.data.datasets[2].data = data.map(item => item.IDA3_cena ?? null);
-        window.myChart1.data.datasets[3].data = data.map(item => item.DT_cena_DE15 ?? null);
-        window.myChart1.data.datasets[4].data = data.map(item => item.DT_SK_cena ?? null);
+        window.myChart1.data.labels = data.map(item => item.cas);
+        window.myChart1.data.datasets[0].data = data.map(item => item.price ?? null);
+        window.myChart1.data.datasets[1].data = data.map(item => item.disp_wavg  ?? null);
+        window.myChart1.data.datasets[2].data = data.map(item => item.disp_min ?? null);
+        window.myChart1.data.datasets[3].data = data.map(item => item.disp_max ?? null);
 
         window.myChart1.update();
 
     }
     
     if (window.myChart2) {
-        window.myChart2.data.labels = data.map(item => item.perioda);
-        window.myChart2.data.datasets[0].data = data.map(item => item.IDA1_nakup ?? null);
-        window.myChart2.data.datasets[1].data = data.map(item => item.IDA1_predaj * -1 ?? null);
-        window.myChart2.data.datasets[2].data = data.map(item => item.IDA2_nakup ?? null);
-        window.myChart2.data.datasets[3].data = data.map(item => item.IDA2_predaj * -1 ?? null);
-        window.myChart2.data.datasets[4].data = data.map(item => item.IDA3_nakup ?? null);
-        window.myChart2.data.datasets[5].data = data.map(item => item.IDA3_predaj * -1 ?? null);
+        window.myChart2.data.labels = data.map(item => item.cas);
+        window.myChart2.data.datasets[0].data = data.map(item => item.quantity ?? null);
+        window.myChart2.data.datasets[1].data = data.map(item => item.offers_spolu ?? null);
+
         window.myChart2.update();
     
     }
