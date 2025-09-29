@@ -16,7 +16,7 @@ router.get('/',checkAuthenticated, async(req, res) => {
   let tomorrow = new Date(today);
   let currentHours = today.getHours();
 
-  if (currentHours < 15) {   //Linode cas, skutocny nas cas je 15
+  if (currentHours < 11) {   //Linode cas, skutocny nas cas je 13
 
     tomorrow.setDate(today.getDate() + 0);
 
