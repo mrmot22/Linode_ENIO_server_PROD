@@ -11,6 +11,21 @@ const vdt_data_Schema = new mongoose.Schema({
 
 });
 
+const dt_data_Schema = new mongoose.Schema({
+   
+    DT_SK_cena: Number,
+    DT_DE_cena: Number,
+    DT_CZ_cena: Number,
+    DT_HU_cena: Number,
+    flow_CZ_SK: Number,
+    flow_HU_SK: Number,
+    flow_PL_SK: Number,
+    flow_SK_CZ: Number,
+    flow_SK_HU: Number,
+    flow_SK_PL: Number,
+
+});
+
 const QH_OKTE_Schema = new mongoose.Schema({
     qh_perioda: String,       // Format: 2025-01-01-01
     qh_num: Number,
@@ -44,6 +59,10 @@ const QH_OKTE_Schema = new mongoose.Schema({
     sys_odch: Number,
     vdt_data: {
             type: vdt_data_Schema,
+            default: {}
+    },
+        dt_data: {
+            type: dt_data_Schema,
             default: {}
     },
     utc_cas: Date
