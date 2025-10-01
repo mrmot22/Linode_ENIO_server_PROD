@@ -39,46 +39,33 @@ router.get('/',checkAuthenticated, async(req, res) => {
 
   const formattedDate = yesterday.toISOString().split('T')[0];
   let vyraz = formattedDate.replace(/-/g,'_') // Format: YYYY-MM-DD
+  const NewWordOrder = new Date("2025-10-01");
 
+  if (yesterday < NewWordOrder) {
 
-  try{
+    try{
 
-    const QH_data = await QH_OKTE_odch.find(
-      {qh_perioda: { $regex: `^${vyraz}` } }, // Filter condition
-      {qh_perioda: 1, qh_num: 1, cena_odch: 1, sys_odch: 1, utc_cas: 1 } // Projection: Include oh_perioda and DT_SK_cena, exclude _id
+        const processedData = await fetchData_old(vyraz);
+        res.render('DT_vs_Odch', { currentDay: formattedDate, dataJSON: processedData});
+    
+      } catch (err) {
+        console.error('Error fetching data:', err);
+        res.status(500).send('Internal Server Error');
+    }
 
-    ).sort({ qh_perioda: 1 });
+  } else {
 
-    const DT_data = await DT_OKTE_ceny.find(
-      { oh_perioda: { $regex: `^${vyraz}` } }, // Filter condition
-      { oh_perioda: 1,
-        'DT_data.DT_SK_cena': 1 } // Projection: Include oh_perioda and DT_SK_cena, exclude _id
-    ).sort({ oh_perioda: 1 });
+    try{
 
-    const processedData = QH_data.map(qh => {
+        const processedData = await fetchData_new(vyraz);
+        res.render('DT_vs_Odch', { currentDay: formattedDate, dataJSON: processedData});
+    
+      } catch (err) {
+        console.error('Error fetching data:', err);
+        res.status(500).send('Internal Server Error');
+    }
 
-      const oh_key = qh.qh_perioda.slice(0,-3);   // Removes the last "-XX" qh part
-      const matchingDT = DT_data.find(dt => dt.oh_perioda === oh_key);  // Find the matching DT_data entry
-
-      return{
-
-        perioda: qh.qh_num,
-        cena_odch: qh.cena_odch ?? null, // Ensure a default value
-        sys_odch: qh.sys_odch ?? null, // Ensure a default value
-        DT_SK_cena: matchingDT ? matchingDT.DT_data.DT_SK_cena : null, // Handle cases where no match is found
-        utc_cas: formatUTCToCET(qh.utc_cas) ?? null // Ensure a default value
-
-      }
-
-    });
-
-    res.render('DT_vs_Odch', { currentDay: formattedDate, dataJSON: processedData});
-
-  } catch (err) {
-    console.error('Error fetching data:', err);
-    res.status(500).send('Internal Server Error');
   }
-
 
 });
 
@@ -105,43 +92,34 @@ router.post('/',checkAuthenticated, async(req,res) => {
 
   const formattedDate = new_date.toISOString().split('T')[0];
   let vyraz = formattedDate.replace(/-/g,'_') // Format: YYYY-MM-DD
+  const NewWordOrder = new Date("2025-10-01");
 
-  try{
+  if (new_date < NewWordOrder) {
 
-    const QH_data = await QH_OKTE_odch.find(
-      {qh_perioda: { $regex: `^${vyraz}` } }, // Filter condition
-      {qh_perioda: 1, qh_num: 1, cena_odch: 1, sys_odch: 1,  utc_cas: 1 } // Projection: Include oh_perioda and DT_SK_cena, exclude _id
 
-    ).sort({ qh_perioda: 1 });
+    try{
 
-    const DT_data = await DT_OKTE_ceny.find(
-      { oh_perioda: { $regex: `^${vyraz}` } }, // Filter condition
-      { oh_perioda: 1,
-        'DT_data.DT_SK_cena': 1 } // Projection: Include oh_perioda and DT_SK_cena, exclude _id
-    ).sort({ oh_perioda: 1 });
+        const processedData = await fetchData_old(vyraz);
+        res.render('DT_vs_Odch', { currentDay: formattedDate, dataJSON: processedData});
+    
+      } catch (err) {
+        console.error('Error fetching data:', err);
+        res.status(500).send('Internal Server Error');
+    }
 
-    const processedData = QH_data.map(qh => {
+  } else {
 
-      const oh_key = qh.qh_perioda.slice(0,-3);   // Removes the last "-XX" qh part
-      const matchingDT = DT_data.find(dt => dt.oh_perioda === oh_key);  // Find the matching DT_data entry
+    try{
 
-      return{
+      const processedData = await fetchData_new(vyraz);
+    //  console.log(processedData)
+      res.render('DT_vs_Odch', { currentDay: formattedDate, dataJSON: processedData});
+    
+    } catch (err) {
 
-        perioda: qh.qh_num,
-        cena_odch: qh.cena_odch ?? null, // Ensure a default value
-        sys_odch: qh.sys_odch ?? null, // Ensure a default value
-        DT_SK_cena: matchingDT ? matchingDT.DT_data.DT_SK_cena : null, // Handle cases where no match is found
-        utc_cas: formatUTCToCET(qh.utc_cas) ?? null // Ensure a default value
-
-      }
-
-    });
-
-    res.render('DT_vs_Odch', { currentDay: formattedDate, dataJSON: processedData});
-
-  } catch (err) {
-    console.error('Error fetching data:', err);
-    res.status(500).send('Internal Server Error');
+      console.error('Error fetching data:', err);
+      res.status(500).send('Internal Server Error');
+    }
   }
 
 })
@@ -149,6 +127,61 @@ router.post('/',checkAuthenticated, async(req,res) => {
 function checkAuthenticated(req, res, next) {
     if (req.isAuthenticated()) return next();
     res.redirect('/login');
-  }   
+}
+
+
+async function fetchData_old(vyraz) {
+
+  const QH_data = await QH_OKTE_odch.find(
+    { qh_perioda: { $regex: `^${vyraz}` } }, // Filter condition
+    { qh_perioda: 1,
+      qh_num: 1,
+      cena_odch: 1,
+      sys_odch: 1,
+      utc_cas: 1 } // Projection
+  ).sort({ qh_perioda: 1 });
+
+  const DT_data = await DT_OKTE_ceny.find(
+    { oh_perioda: { $regex: `^${vyraz}` } }, // Filter condition
+    { oh_perioda: 1,
+      'DT_data.DT_SK_cena': 1 } // Projection
+  ).sort({ oh_perioda: 1 });
+
+  return QH_data.map(qh => {
+    const oh_key = qh.qh_perioda.slice(0, -3); // Removes the last "-XX" qh part
+    const matchingDT = DT_data.find(dt => dt.oh_perioda === oh_key); // Find the matching DT_data entry
+
+    return {
+      perioda: qh.qh_num,
+      cena_odch: qh.cena_odch ?? null, // Ensure a default value
+      sys_odch: qh.sys_odch ?? null, // Ensure a default value
+      DT_SK_cena: matchingDT ? matchingDT.DT_data.DT_SK_cena : null, // Handle cases where no match is found
+      utc_cas: formatUTCToCET(qh.utc_cas) ?? null // Ensure a default value
+    };
+  });
+}
+
+
+async function fetchData_new(vyraz) {
+  
+  const QH_data = await QH_OKTE_odch.find(
+    { qh_perioda: { $regex: `^${vyraz}` } }, // Filter condition
+    { qh_num: 1,
+      cena_odch: 1,
+      sys_odch: 1,
+      utc_cas: 1,
+      'dt_data.DT_SK_cena': 1
+     } // Projection
+  ).sort({ qh_perioda: 1 });
+
+  return QH_data.map(qh => ({
+    perioda: qh.qh_num,
+    cena_odch: qh.cena_odch ?? null, // Ensure a default value
+    sys_odch: qh.sys_odch ?? null,
+    DT_SK_cena: qh.dt_data.DT_SK_cena ?? null,
+    utc_cas: formatUTCToCET(qh.utc_cas) ?? null // Ensure a default value
+
+  }));
+}
 
 module.exports = router
