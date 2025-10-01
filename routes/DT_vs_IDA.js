@@ -19,6 +19,7 @@ function formatUTCToCET(utcDateString) {
 
 //   - Start of the router --HOME -- 
 
+
 router.get('/',checkAuthenticated, async(req, res) => {
 
   let today = new Date();
@@ -156,7 +157,6 @@ router.get('/',checkAuthenticated, async(req, res) => {
 
   }
 })
-
 
 router.post('/data',checkAuthenticated, async(req,res) => {
 
@@ -296,7 +296,6 @@ router.post('/data',checkAuthenticated, async(req,res) => {
     }
 
   }
-
 
   })
 

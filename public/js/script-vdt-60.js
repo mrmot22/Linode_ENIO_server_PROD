@@ -166,7 +166,7 @@ function updateCharts(data) {
         window.myChart1.data.labels = data.map(item => item.perioda);
         window.myChart1.data.datasets[0].data = data.map(item => item.cena_VDT60_avg ?? null);
         window.myChart1.data.datasets[1].data = data.map(item => item.cena_VDT15_avg  ?? null);
-        window.myChart1.data.datasets[2].data = data.map(item => item.cena_SK ?? null);
+        window.myChart1.data.datasets[2].data = data.map(item => item.cena_DT_avg ?? null);
         window.myChart1.data.datasets[3].data = data.map(item => item.cena_VDT60_min ?? null);
         window.myChart1.data.datasets[4].data = data.map(item => item.cena_VDT60_max ?? null);
         window.myChart1.update();
