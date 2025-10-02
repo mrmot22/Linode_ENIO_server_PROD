@@ -17,6 +17,7 @@ const dt_data_Schema = new mongoose.Schema({
     DT_DE_cena: Number,
     DT_CZ_cena: Number,
     DT_HU_cena: Number,
+    DT_PL_cena: Number,
     flow_CZ_SK: Number,
     flow_HU_SK: Number,
     flow_PL_SK: Number,

@@ -153,6 +153,7 @@ async function fetchData_new(vyraz) {
       'dt_data.DT_CZ_cena': 1,
       'dt_data.DT_DE_cena': 1,
       'dt_data.DT_HU_cena': 1,
+      'dt_data.DT_PL_cena': 1,
       utc_cas: 1,
     }
   ).sort({ qh_num: 1 });
@@ -162,25 +163,17 @@ async function fetchData_new(vyraz) {
     { oh_perioda: 1, 
       'DT_data.DT_PL_cena': 1}).sort({ oh_perioda: 1 });  // Projection: Include oh_perioda and DT_SK_cena, exclude _id
 
-  return processedData = OKTE_data.map(qh => {
-
-    const oh_key = qh.qh_perioda.slice(0,-3);   // Removes the last "-XX" qh part
-    const matchingDT = PL_data.find(dt => dt.oh_perioda === oh_key);  // Find the matching DT_data entry
-
-    return{
+  return processedData = OKTE_data.map(qh => ({
 
       perioda: qh.qh_num ?? null, // Ensure a default value
       cena_SK: qh.dt_data.DT_SK_cena ?? null, // Ensure a default value
       cena_CZ: qh.dt_data.DT_CZ_cena ?? null, // Ensure a default value
       cena_DE: qh.dt_data.DT_DE_cena ?? null, // Ensure a default value
       cena_HU: qh.dt_data.DT_HU_cena ?? null, // Ensure a default value
+      cena_PL: qh.dt_data.DT_PL_cena ?? null, // Handle cases where no match is found
       utc_cas: formatUTCToCET(qh.utc_cas) ?? null, // Ensure a default value
-      cena_PL: matchingDT ? matchingDT.DT_data.DT_PL_cena : null // Handle cases where no match is found
-    }
 
-
-  });
-
+    }));
 
 }
 
