@@ -25,7 +25,6 @@ router.get('/',checkAuthenticated, async(req, res) => {
   try {
 
     const processedData = await fetchData_new(vyraz);
-    console.log(processedData);
     res.render('DT_ceny', { currentDay: formattedDate, dataJSON: processedData }); // Render index.ejs and pass the data
 
   } catch (err) {
